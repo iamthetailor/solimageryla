@@ -269,7 +269,7 @@ export default function Home() {
               Turn Your Dream Wedding Into Timeless Art
             </p>
             <p className="hidden md:block text-lg text-white/80 font-light mb-8 max-w-3xl mx-auto hero-element">
-              Los Angeles' most sought-after luxury wedding photographers. Limited availability for 2025-2026.
+              Los Angeles&apos; most sought-after luxury wedding photographers. Limited availability for 2025-2026.
             </p>
             <div className="flex justify-center items-center mb-12 md:mb-16 hero-element">
               <a href="#contact" className="bg-white text-neutral-900 px-6 md:px-10 py-3 md:py-5 font-medium text-xs md:text-sm uppercase tracking-[0.2em] hover:bg-neutral-100 transition-all duration-300 transform hover:scale-105 shadow-2xl">
@@ -353,7 +353,7 @@ export default function Home() {
                       <div className="absolute bottom-8 left-8 right-8">
                         <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 text-center">
                           <p className="text-neutral-900 font-light italic text-lg">
-                            "Creating timeless memories for extraordinary couples"
+                            &ldquo;Creating timeless memories for extraordinary couples&rdquo;
                           </p>
                         </div>
                       </div>
@@ -368,7 +368,7 @@ export default function Home() {
                           <span className="text-2xl">🏙️</span>
                         </div>
                         <h3 className="text-2xl font-light text-neutral-900 mb-4">Los Angeles Experts</h3>
-                        <p className="text-neutral-600 leading-relaxed">Deep local knowledge of LA's most stunning venues, from intimate gardens to luxury estates</p>
+                        <p className="text-neutral-600 leading-relaxed">Deep local knowledge of LA&apos;s most stunning venues, from intimate gardens to luxury estates</p>
                       </div>
                     </div>
                     
@@ -378,7 +378,7 @@ export default function Home() {
                           <span className="text-2xl">✨</span>
                         </div>
                         <h3 className="text-2xl font-light text-neutral-900 mb-4">Satisfaction Guarantee</h3>
-                        <p className="text-neutral-600 leading-relaxed">If you're not completely thrilled, we'll make it right</p>
+                        <p className="text-neutral-600 leading-relaxed">If you&apos;re not completely thrilled, we&apos;ll make it right</p>
                       </div>
                     </div>
                   </div>
@@ -389,7 +389,7 @@ export default function Home() {
               <div className="text-center rounded-3xl p-6 md:p-12" style={{background: `linear-gradient(to right, #f9fafb, #ceb07e20)`}}>
                 <h3 className="text-2xl md:text-3xl font-light text-neutral-900 mb-3 md:mb-4">Ready to Begin Your Journey?</h3>
                 <p className="text-sm md:text-base text-neutral-600 mb-6 md:mb-8 max-w-xl mx-auto">
-                  Join couples who've chosen Sol Imagery to capture their most precious moments
+                  Join couples who&apos;ve chosen Sol Imagery to capture their most precious moments
                 </p>
                 <a 
                   href="#contact" 
@@ -423,7 +423,7 @@ export default function Home() {
               </h2>
               <div className="w-24 h-px mx-auto mb-6 md:mb-8" style={{backgroundColor: '#ceb07e'}}></div>
               <p className="text-lg md:text-xl text-neutral-600 font-light max-w-2xl mx-auto leading-relaxed">
-                A curated selection featuring Evelyn & Angel's special day and our most cherished moments of artistry
+                A curated selection featuring Evelyn & Angel&apos;s special day and our most cherished moments of artistry
               </p>
             </div>
             
@@ -576,7 +576,7 @@ export default function Home() {
               <div className="bg-neutral-50 p-6 md:p-8 text-center scroll-animate fade-up delay-400">
                 <div className="text-xl md:text-2xl mb-3 md:mb-4" style={{color: '#ceb07e'}}>⭐⭐⭐⭐⭐</div>
                 <blockquote className="text-base md:text-lg font-light text-neutral-900 italic mb-4 md:mb-6 leading-relaxed">
-                  "Sol Imagery exceeded our expectations! Their fresh approach and attention to detail made our day magical."
+                  &ldquo;Sol Imagery exceeded our expectations! Their fresh approach and attention to detail made our day magical.&rdquo;
                 </blockquote>
                 <p className="text-neutral-600 font-light text-xs md:text-sm uppercase tracking-wide">— SARAH & MICHAEL</p>
                 <p className="text-neutral-500 text-xs mt-1">Recent Client</p>
@@ -585,7 +585,7 @@ export default function Home() {
               <div className="bg-neutral-50 p-6 md:p-8 text-center scroll-animate fade-up delay-600">
                 <div className="text-xl md:text-2xl mb-3 md:mb-4" style={{color: '#ceb07e'}}>⭐⭐⭐⭐⭐</div>
                 <blockquote className="text-base md:text-lg font-light text-neutral-900 italic mb-4 md:mb-6 leading-relaxed">
-                  "Professional, creative, and incredibly passionate. They captured moments we didn't even know were happening!"
+                  &ldquo;Professional, creative, and incredibly passionate. They captured moments we didn&apos;t even know were happening!&rdquo;
                 </blockquote>
                 <p className="text-neutral-600 font-light text-xs md:text-sm uppercase tracking-wide">— JESSICA & DAVID</p>
                 <p className="text-neutral-500 text-xs mt-1">Recent Client</p>
@@ -594,7 +594,7 @@ export default function Home() {
               <div className="bg-neutral-50 p-6 md:p-8 text-center scroll-animate fade-up delay-800">
                 <div className="text-xl md:text-2xl mb-3 md:mb-4" style={{color: '#ceb07e'}}>⭐⭐⭐⭐⭐</div>
                 <blockquote className="text-base md:text-lg font-light text-neutral-900 italic mb-4 md:mb-6 leading-relaxed">
-                  "Amazing quality and service! Their dedication to perfection shows in every single photograph."
+                  &ldquo;Amazing quality and service! Their dedication to perfection shows in every single photograph.&rdquo;
                 </blockquote>
                 <p className="text-neutral-600 font-light text-xs md:text-sm uppercase tracking-wide">— AMANDA & CARLOS</p>
                 <p className="text-neutral-500 text-xs mt-1">Recent Client</p>
@@ -632,7 +632,7 @@ export default function Home() {
               </p>
               <div className="w-16 h-px bg-neutral-500 mx-auto mb-6 md:mb-8"></div>
               <p className="text-base md:text-lg font-light text-neutral-300 leading-relaxed max-w-2xl mx-auto">
-                Don't let your dream wedding photos slip away. Book your free consultation now and let's discuss how to make your vision a reality.
+                Don&apos;t let your dream wedding photos slip away. Book your free consultation now and let&apos;s discuss how to make your vision a reality.
               </p>
               <div className="mt-4 md:mt-6 text-neutral-400 text-xs md:text-sm">
                 ✓ Quick response time  ✓ No sales pressure  ✓ Custom package options
@@ -712,7 +712,7 @@ export default function Home() {
 
               {/* Trust Signals */}
               <div className="bg-white/5 rounded-lg p-4 text-center text-sm text-neutral-300">
-                <p className="text-xs opacity-75">Join 100+ couples who've trusted us with their special day</p>
+                <p className="text-xs opacity-75">Join 100+ couples who&apos;ve trusted us with their special day</p>
               </div>
 
               <div className="pt-6 md:pt-8">
@@ -915,7 +915,7 @@ export default function Home() {
                 `}</style>
                 <div className="text-center mt-4 space-y-2">
                   <p className="text-neutral-400 text-sm">
-                    ⚡ We'll call you within 2 hours to schedule your consultation
+                    ⚡ We&apos;ll call you within 2 hours to schedule your consultation
                   </p>
                 </div>
               </div>
@@ -931,7 +931,7 @@ export default function Home() {
                     </p>
                     <div className="rounded-lg p-4 mb-4" style={{backgroundColor: 'rgba(206, 176, 126, 0.2)'}}>
                       <p className="text-sm font-medium" style={{color: '#ceb07e'}}>
-                        📞 We'll call you within 2 hours to schedule your free consultation
+                        📞 We&apos;ll call you within 2 hours to schedule your free consultation
                       </p>
                     </div>
                     <p className="text-neutral-400 text-xs">
@@ -974,7 +974,7 @@ export default function Home() {
                       </div>
                     </div>
                     <p className="text-neutral-300 font-light text-sm">
-                      Join couples who've already booked their dream photographer with Sol Imagery!
+                      Join couples who&apos;ve already booked their dream photographer with Sol Imagery!
                     </p>
                   </div>
                 </div>
