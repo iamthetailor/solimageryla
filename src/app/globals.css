@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/* Editor's Note Font Family */
+@font-face {
+  font-family: 'Editor\'s Note';
+  src: url('/fonts/editors-note/EditorsNote-Light-iF664322be5b734.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Editor\'s Note';
+  src: url('/fonts/editors-note/EditorsNote-Regular-iF664322be6e849.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Editor\'s Note';
+  src: url('/fonts/editors-note/EditorsNote-Medium-iF664322be6500a.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Editor\'s Note';
+  src: url('/fonts/editors-note/EditorsNote-LightItalic-iF664322be6092b.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-editors-note: 'Editor\'s Note', serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Smooth scroll offset for fixed navigation */
+section {
+  scroll-margin-top: 80px;
+}
+
+/* Header typography using Editor's Note font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Editor\'s Note', serif;
+}
