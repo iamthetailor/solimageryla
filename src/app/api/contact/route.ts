@@ -94,10 +94,6 @@ export async function POST(request: NextRequest) {
               </ul>
             </div>
             
-            <div style="background-color: #ceb07e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
-              <p style="margin: 0; font-size: 16px; font-weight: 500;">📞 Expect our call within 2 hours!</p>
-            </div>
-            
             <div style="text-align: center; margin-bottom: 25px;">
               <p style="color: #555; font-size: 16px; margin-bottom: 15px;">In the meantime, follow us for inspiration:</p>
               <a href="https://www.instagram.com/solimageryla/" style="display: inline-block; background-color: #ceb07e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 500;">Follow @solimageryla</a>
