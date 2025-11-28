@@ -66,13 +66,18 @@ export default function Home() {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // For now, we'll simulate a form submission
-      // In production, you'd send this to your backend or a service like Formspree
-      console.log('Form submission:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
       setSubmitStatus('success');
       (e.target as HTMLFormElement).reset();
     } catch (error) {
@@ -915,7 +920,7 @@ export default function Home() {
                 `}</style>
                 <div className="text-center mt-4 space-y-2">
                   <p className="text-neutral-400 text-sm">
-                    ⚡ We&apos;ll call you within 2 hours to schedule your consultation
+                    ⚡ We&apos;ll reach out within 24 hours to schedule your consultation
                   </p>
                 </div>
               </div>
@@ -930,8 +935,8 @@ export default function Home() {
                       Your consultation request has been received successfully!
                     </p>
                     <div className="rounded-lg p-4 mb-4" style={{backgroundColor: 'rgba(206, 176, 126, 0.2)'}}>
-                      <p className="text-sm font-medium" style={{color: '#ceb07e'}}>
-                        📞 We&apos;ll call you within 2 hours to schedule your free consultation
+                        <p className="text-sm font-medium" style={{color: '#ceb07e'}}>
+                        📞 We&apos;ll reach out within 24 hours to schedule your free consultation
                       </p>
                     </div>
                     <p className="text-neutral-400 text-xs">
