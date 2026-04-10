@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sol Imagery - Luxury Wedding Photography in Los Angeles",
-  description: "Professional wedding photography in Los Angeles. Capturing your love story with artistic vision and timeless elegance. Serving couples throughout LA with premium photography services.",
-  keywords: "wedding photography, Los Angeles photographer, luxury weddings, professional photography, wedding photographer LA, engagement photos, bridal portraits",
+  title: "Sol Imagery — Luxury Photography in Los Angeles | Weddings, Quinceañeras, Family & Photobooth",
+  description: "Luxury Los Angeles photography studio specializing in weddings, pre-wedding sessions, quinceañeras, family portraits, and luxury photobooth experiences. Book a free consultation today.",
+  keywords: "los angeles photographer, luxury photography la, wedding photography los angeles, quinceañera photographer los angeles, 15 años photography, family photographer la, luxury photobooth, engagement photography, pre-wedding photos, professional headshots los angeles, linkedin headshot photographer, corporate headshots la",
   authors: [{ name: "Sol Imagery" }],
   creator: "Sol Imagery",
   publisher: "Sol Imagery",
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "Sol Imagery - Luxury Wedding Photography in Los Angeles",
-    description: "Professional wedding photography in Los Angeles. Capturing your love story with artistic vision and timeless elegance. Serving couples throughout LA with premium photography services.",
+    title: "Sol Imagery — Luxury Photography in Los Angeles",
+    description: "Luxury Los Angeles photography: weddings, quinceañeras, family portraits, and luxury photobooth. Book a free consultation today.",
     url: 'https://solimagery.com',
     siteName: 'Sol Imagery',
     images: [
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
         url: '/images/sol-imagery-logo-gold.png',
         width: 1200,
         height: 630,
-        alt: 'Sol Imagery - Luxury Wedding Photography',
+        alt: 'Sol Imagery - Luxury Los Angeles Photography',
       },
     ],
     locale: 'en_US',
@@ -46,8 +46,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Sol Imagery - Luxury Wedding Photography in Los Angeles",
-    description: "Professional wedding photography in Los Angeles. Capturing your love story with artistic vision and timeless elegance.",
+    title: "Sol Imagery — Luxury Photography in Los Angeles",
+    description: "Weddings, quinceañeras, family portraits & luxury photobooth. Book a free consultation.",
     images: ['/images/sol-imagery-logo-gold.png'],
     creator: '@solimagery',
   },

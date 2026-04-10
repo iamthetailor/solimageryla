@@ -4,10 +4,10 @@ import nodemailer from 'nodemailer';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, phone, weddingDate, dreamWedding } = body;
+    const { fullName, email, phone, serviceType } = body;
 
     // Validate required fields
-    if (!fullName || !email || !phone) {
+    if (!fullName || !email || !phone || !serviceType) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const businessEmailContent = {
       from: process.env.GMAIL_USER,
       to: process.env.GMAIL_USER, // Send to your own email
-      subject: `New Wedding Consultation Request from ${fullName}`,
+      subject: `🎉 New ${serviceType} Inquiry from ${fullName} — Respond within 2 hours!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -41,17 +41,8 @@ export async function POST(request: NextRequest) {
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Name:</strong> ${fullName}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #ceb07e; text-decoration: none;">${email}</a></p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${phone}" style="color: #ceb07e; text-decoration: none;">${phone}</a></p>
-              ${weddingDate ? `<p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Wedding Date:</strong> ${weddingDate}</p>` : ''}
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${serviceType}</p>
             </div>
-            
-            ${dreamWedding ? `
-            <div style="margin-bottom: 25px;">
-              <h2 style="color: #333; font-size: 20px; margin-bottom: 15px; font-weight: 400;">Wedding Vision</h2>
-              <div style="background-color: #f8f8f8; padding: 20px; border-radius: 8px; border-left: 4px solid #ceb07e;">
-                <p style="margin: 0; color: #555; font-size: 16px; line-height: 1.6; font-style: italic;">"${dreamWedding}"</p>
-              </div>
-            </div>
-            ` : ''}
             
             <div style="background-color: #ceb07e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 30px;">
               <p style="margin: 0; font-size: 16px; font-weight: 500;">⚡ Respond within 2 hours for best results!</p>
@@ -81,7 +72,7 @@ export async function POST(request: NextRequest) {
             </div>
             
             <p style="color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
-              We're thrilled that you're considering Sol Imagery for your special day! Your consultation request has been received, and we can't wait to learn more about your vision.
+              Thanks for reaching out about your ${serviceType.toLowerCase()} — we're thrilled you're considering Sol Imagery! Your consultation request has been received, and we can't wait to learn more about your vision.
             </p>
             
             <div style="background-color: #f8f8f8; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
@@ -90,7 +81,7 @@ export async function POST(request: NextRequest) {
                 <li style="margin-bottom: 8px;">We'll reach out to you within 24 hours to schedule your free consultation</li>
                 <li style="margin-bottom: 8px;">During our call, we'll discuss your vision, timeline, and package options</li>
                 <li style="margin-bottom: 8px;">We'll provide a custom quote tailored to your needs</li>
-                <li>If you're ready to move forward, we'll secure your date!</li>
+                <li>If you're ready to move forward, we'll lock in your booking!</li>
               </ul>
             </div>
             

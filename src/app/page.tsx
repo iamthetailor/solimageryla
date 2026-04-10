@@ -7,6 +7,7 @@ export default function Home() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<string>('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,6 +80,7 @@ export default function Home() {
       }
 
       setSubmitStatus('success');
+      setSelectedService('');
       (e.target as HTMLFormElement).reset();
     } catch (error) {
       console.error('Form submission error:', error);
@@ -251,30 +253,31 @@ export default function Home() {
         {/* Main Hero */}
         <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
           {/* Background Image */}
+          {/* TODO: rotate/swap hero imagery once multi-service photos are delivered */}
           <div className="absolute inset-0 z-0">
-            <img 
-              src="/images/EAWedding-00953.jpg" 
-              alt="Elegant wedding photography" 
+            <img
+              src="/images/EAWedding-00953.jpg"
+              alt="Sol Imagery luxury Los Angeles photography"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40"></div>
           </div>
-          
+
           <div className="relative z-10 max-w-5xl mx-auto text-center px-6">
             <div className="mb-6 hero-element">
               <span className="bg-white/10 backdrop-blur-sm text-white px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-light tracking-wide text-center">
-                <span className="hidden sm:inline">✨ Passionate Photographers Making Magic Happen</span>
-                <span className="sm:hidden">✨ Making Magic Happen</span>
+                <span className="hidden sm:inline">✨ Los Angeles Luxury Photography Studio</span>
+                <span className="sm:hidden">✨ LA Luxury Photography</span>
               </span>
             </div>
             <h1 className="text-4xl md:text-7xl lg:text-8xl font-thin text-white mb-6 md:mb-8 leading-tight tracking-tight hero-element">
-              Exceptional Wedding Photography
+              Timeless Photography for Every Milestone
             </h1>
             <p className="text-lg md:text-2xl text-white/95 font-light mb-4 md:mb-6 tracking-wide hero-element">
-              Turn Your Dream Wedding Into Timeless Art
+              Weddings · Quinceañeras · Family · Photobooth
             </p>
             <p className="hidden md:block text-lg text-white/80 font-light mb-8 max-w-3xl mx-auto hero-element">
-              Los Angeles&apos; most sought-after luxury wedding photographers. Limited availability for 2025-2026.
+              Los Angeles&apos; luxury photography studio, crafting unforgettable images for life&apos;s biggest moments. Now booking 2026-2027.
             </p>
             <div className="flex justify-center items-center mb-12 md:mb-16 hero-element">
               <a href="#contact" className="bg-white text-neutral-900 px-6 md:px-10 py-3 md:py-5 font-medium text-xs md:text-sm uppercase tracking-[0.2em] hover:bg-neutral-100 transition-all duration-300 transform hover:scale-105 shadow-2xl">
@@ -310,13 +313,13 @@ export default function Home() {
               {/* Main Heading */}
               <div className="text-center scroll-animate fade-up">
                 <h2 className="text-4xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6 tracking-tight">
-                  Why <span className="italic">Couples</span> Choose 
+                  Why <span className="italic">Clients</span> Choose
                   <br className="hidden sm:block" />
                   <span className="sm:hidden"> </span>Sol Imagery
                 </h2>
                 <div className="w-24 h-px mx-auto mb-6 md:mb-8" style={{backgroundColor: '#ceb07e'}}></div>
                 <p className="text-lg md:text-xl text-neutral-600 font-light max-w-2xl mx-auto leading-relaxed">
-                  Discover what sets us apart in the world of luxury wedding photography
+                  Discover what sets us apart across every celebration we photograph
                 </p>
               </div>
 
@@ -341,7 +344,7 @@ export default function Home() {
                           <span className="text-2xl">🤝</span>
                         </div>
                         <h3 className="text-2xl font-light text-neutral-900 mb-4">Personalized Service</h3>
-                        <p className="text-neutral-600 leading-relaxed">We focus on a select number of couples to ensure exceptional attention</p>
+                        <p className="text-neutral-600 leading-relaxed">Every session is built around your vision — from intimate family portraits to grand celebrations</p>
                       </div>
                     </div>
                   </div>
@@ -349,16 +352,16 @@ export default function Home() {
                   {/* Center Image */}
                   <div className="lg:col-span-1 relative group scroll-animate fade-up delay-600">
                     <div className="relative overflow-hidden rounded-3xl shadow-2xl">
-                      <img 
-                        src="/images/EAWedding-00805.jpg" 
-                        alt="Elegant wedding moment" 
+                      <img
+                        src="/images/EAWedding-00805.jpg"
+                        alt="Sol Imagery signature photography style"
                         className="w-full h-[400px] md:h-[700px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                       <div className="absolute bottom-8 left-8 right-8">
                         <div className="bg-white/95 backdrop-blur-md rounded-xl p-6 text-center">
                           <p className="text-neutral-900 font-light italic text-lg">
-                            &ldquo;Creating timeless memories for extraordinary couples&rdquo;
+                            &ldquo;Creating timeless memories for extraordinary moments&rdquo;
                           </p>
                         </div>
                       </div>
@@ -394,7 +397,7 @@ export default function Home() {
               <div className="text-center rounded-3xl p-6 md:p-12" style={{background: `linear-gradient(to right, #f9fafb, #ceb07e20)`}}>
                 <h3 className="text-2xl md:text-3xl font-light text-neutral-900 mb-3 md:mb-4">Ready to Begin Your Journey?</h3>
                 <p className="text-sm md:text-base text-neutral-600 mb-6 md:mb-8 max-w-xl mx-auto">
-                  Join couples who&apos;ve chosen Sol Imagery to capture their most precious moments
+                  Join the clients who&apos;ve chosen Sol Imagery to capture their most precious moments
                 </p>
                 <a 
                   href="#contact" 
@@ -424,50 +427,51 @@ export default function Home() {
             <div className="text-center mb-12 md:mb-20 scroll-animate fade-up">
               <p className="text-xs md:text-sm font-light text-neutral-500 uppercase tracking-[0.2em] mb-3 md:mb-4">portfolio highlights</p>
               <h2 className="text-4xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6 tracking-tight">
-                Our <span className="italic">Featured</span> Work
+                A <span className="italic">Glimpse</span> of Our Work
               </h2>
               <div className="w-24 h-px mx-auto mb-6 md:mb-8" style={{backgroundColor: '#ceb07e'}}></div>
               <p className="text-lg md:text-xl text-neutral-600 font-light max-w-2xl mx-auto leading-relaxed">
-                A curated selection featuring Evelyn & Angel&apos;s special day and our most cherished moments of artistry
+                From weddings to family portraits, every moment captured with intention and artistry
               </p>
             </div>
-            
+
+            {/* TODO: swap in multi-service imagery (quinceañera, family, photobooth) once delivered */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-16">
               <div className="group overflow-hidden scroll-animate slide-left delay-200">
-                <img 
-                  src="/images/EAWedding-00848.jpg" 
-                  alt="Wedding detail" 
+                <img
+                  src="/images/EAWedding-00848.jpg"
+                  alt="Sol Imagery editorial photography"
                   className="w-full h-[300px] md:h-[500px] object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
                 />
               </div>
               <div className="group overflow-hidden scroll-animate slide-right delay-400">
-                <img 
-                  src="/images/EA-06043.jpg" 
-                  alt="Couple portrait" 
+                <img
+                  src="/images/EA-06043.jpg"
+                  alt="Sol Imagery portrait session"
                   className="w-full h-[300px] md:h-[500px] object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <div className="group overflow-hidden scroll-animate fade-up delay-200">
-                <img 
-                  src="/images/EAWedding-00996.jpg" 
-                  alt="Wedding moment" 
+                <img
+                  src="/images/EAWedding-00996.jpg"
+                  alt="Sol Imagery candid moment"
                   className="w-full h-[200px] md:h-[300px] object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
                 />
               </div>
               <div className="group overflow-hidden scroll-animate fade-up delay-400">
-                <img 
-                  src="/images/EA-06372.jpg" 
-                  alt="Romantic moment" 
+                <img
+                  src="/images/EA-06372.jpg"
+                  alt="Sol Imagery romantic portrait"
                   className="w-full h-[200px] md:h-[300px] object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
                 />
               </div>
               <div className="group overflow-hidden scroll-animate fade-up delay-600">
-                <img 
-                  src="/images/EAWedding-01079.jpg" 
-                  alt="Intimate moment" 
+                <img
+                  src="/images/EAWedding-01079.jpg"
+                  alt="Sol Imagery intimate celebration"
                   className="w-full h-[200px] md:h-[300px] object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
                 />
               </div>
@@ -486,30 +490,81 @@ export default function Home() {
               </h2>
               <div className="w-24 h-px mx-auto mb-6 md:mb-8" style={{backgroundColor: '#ceb07e'}}></div>
               <p className="text-lg md:text-xl text-neutral-600 font-light max-w-2xl mx-auto leading-relaxed">
-                From intimate ceremonies to grand celebrations, we craft each moment with artistry designed around your unique vision
+                From intimate family portraits to grand celebrations, we craft every moment with artistry designed around your unique vision
               </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              <div className="bg-white p-6 md:p-8 text-center scroll-animate fade-up delay-200">
-                <h3 className="text-lg md:text-xl font-light text-neutral-900 mb-3 md:mb-4">Weddings</h3>
-                <p className="text-sm md:text-base text-neutral-600 font-light leading-relaxed">
-                  Luxury wedding photography that captures the essence of your special day with timeless elegance.
-                </p>
-              </div>
-              <div className="bg-white p-6 md:p-8 text-center scroll-animate fade-up delay-400">
-                <h3 className="text-lg md:text-xl font-light text-neutral-900 mb-3 md:mb-4">Portraits</h3>
-                <p className="text-sm md:text-base text-neutral-600 font-light leading-relaxed">
-                  Sophisticated portrait sessions that reveal your authentic self through artistic vision.
-                </p>
-              </div>
-              <div className="bg-white p-6 md:p-8 text-center scroll-animate fade-up delay-600">
-                <h3 className="text-lg md:text-xl font-light text-neutral-900 mb-3 md:mb-4">Engagements</h3>
-                <p className="text-sm md:text-base text-neutral-600 font-light leading-relaxed">
-                  Romantic engagement sessions that celebrate your love story in beautiful locations.
-                </p>
-              </div>
+
+            <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+              {[
+                { number: '01', title: 'Weddings', service: 'Wedding', delay: 'delay-200', copy: 'Full-day coverage that transforms your wedding into a timeless visual story.' },
+                { number: '02', title: 'Pre-Wedding / Engagement', service: 'Pre-Wedding / Engagement', delay: 'delay-400', copy: 'Pre-shoot sessions that tell the love story leading up to your big day.' },
+                { number: '03', title: 'Quinceañeras', service: 'Quinceañera', delay: 'delay-600', copy: 'Elegant 15 años photography capturing a once-in-a-lifetime celebration.' },
+                { number: '04', title: 'Family Portraits', service: 'Family Portraits', delay: 'delay-800', copy: 'Sophisticated family sessions that turn everyday love into heirloom art.' },
+                { number: '05', title: 'Luxury Photobooth', service: 'Luxury Photobooth', delay: 'delay-1000', copy: 'Studio-quality portrait booth for events — clean, modern, unforgettable keepsakes.' },
+              ].map((card) => (
+                <a
+                  key={card.service}
+                  href="#contact"
+                  onClick={() => setSelectedService(card.service)}
+                  className={`group block bg-white p-6 md:p-10 shadow-sm hover:shadow-xl transition-all duration-500 w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] scroll-animate fade-up ${card.delay}`}
+                >
+                  <div
+                    className="font-light text-5xl md:text-6xl italic opacity-50 group-hover:opacity-90 transition-opacity duration-500"
+                    style={{ color: '#ceb07e', fontFamily: 'var(--font-editors-note), serif' }}
+                  >
+                    {card.number}
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-light text-neutral-900 mt-4">
+                    {card.title}
+                  </h3>
+                  <div
+                    className="h-px my-4 w-8 group-hover:w-16 transition-all duration-500"
+                    style={{ backgroundColor: '#ceb07e' }}
+                  ></div>
+                  <p className="text-neutral-600 font-light leading-relaxed mb-6">
+                    {card.copy}
+                  </p>
+                  <div
+                    className="inline-flex items-center text-sm font-light uppercase tracking-[0.2em] transition-transform duration-300 group-hover:translate-x-1"
+                    style={{ color: '#ceb07e' }}
+                  >
+                    Inquire <span className="ml-2">→</span>
+                  </div>
+                </a>
+              ))}
             </div>
+          </div>
+        </section>
+
+        {/* Professional Headshots — compact B2B callout */}
+        <section id="headshots" className="py-12 md:py-20 px-6 bg-white">
+          <div className="max-w-2xl mx-auto text-center scroll-animate fade-up">
+            <p className="text-xs font-light text-neutral-500 uppercase tracking-[0.2em] mb-2">
+              corporate &amp; personal brand
+            </p>
+            <div
+              className="font-light text-3xl md:text-4xl italic opacity-50"
+              style={{ color: '#ceb07e', fontFamily: 'var(--font-editors-note), serif' }}
+            >
+              06
+            </div>
+            <h2 className="text-3xl md:text-4xl font-light text-neutral-900 tracking-tight mt-2">
+              Professional <span className="italic">Headshots</span>
+            </h2>
+            <div className="w-8 h-px mx-auto my-5" style={{ backgroundColor: '#ceb07e' }}></div>
+            <p className="text-base md:text-lg text-neutral-600 font-light leading-relaxed max-w-xl mx-auto mb-8">
+              Polished headshots for LinkedIn, company websites, and personal brands — studio or on-location, with quick sessions and fast turnaround.
+            </p>
+            <a
+              href="#contact"
+              onClick={() => setSelectedService('Professional Headshots')}
+              className="inline-flex items-center text-white px-8 py-3 font-medium text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+              style={{ backgroundColor: '#ceb07e' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#b8996b'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#ceb07e'; }}
+            >
+              Inquire <span className="ml-2">→</span>
+            </a>
           </div>
         </section>
 
@@ -529,19 +584,20 @@ export default function Home() {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-20 items-center">
               <div className="order-1 lg:order-1 group scroll-animate slide-left delay-200">
-                <img 
-                  src="/images/EAWedding-01073.jpg" 
-                  alt="Behind the scenes" 
+                <img
+                  src="/images/EAWedding-01073.jpg"
+                  alt="Sol Imagery behind the scenes"
                   className="w-full h-[300px] md:h-[500px] object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
                 />
               </div>
               <div className="order-2 lg:order-2 lg:pl-8 scroll-animate slide-right delay-400">
                 <p className="text-lg text-neutral-700 font-light leading-[1.8]">
-                  We are a team of talented photographers dedicated to capturing the heart of your story. We believe in 
-                  creating more than just beautiful photos; we strive to encapsulate the true essence of your moments. 
-                  From candid smiles to grand celebrations, our collective expertise ensures every detail is thoughtfully 
-                  documented. With a seamless blend of creativity and professionalism, we make your experience enjoyable 
-                  and your memories unforgettable.
+                  We are a team of Los Angeles photographers who specialize in life&apos;s biggest celebrations — weddings,
+                  quinceañeras, family portraits, and luxury photobooth experiences. We believe in creating more than
+                  just beautiful photos; we strive to encapsulate the true essence of your moments. From candid smiles
+                  to grand celebrations, our collective expertise ensures every detail is thoughtfully documented. With
+                  a seamless blend of creativity and professionalism, we make your experience enjoyable and your
+                  memories unforgettable.
                 </p>
               </div>
             </div>
@@ -555,11 +611,11 @@ export default function Home() {
             <div className="text-center mb-12 md:mb-16 scroll-animate fade-up">
               <p className="text-xs md:text-sm font-light text-neutral-500 uppercase tracking-[0.2em] mb-3 md:mb-4">testimonials</p>
               <h2 className="text-4xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6 tracking-tight">
-                What Our <span className="italic" style={{color: '#ceb07e'}}>Couples</span> Say
+                What Our <span className="italic" style={{color: '#ceb07e'}}>Clients</span> Say
               </h2>
               <div className="w-24 h-px mx-auto mb-6 md:mb-8" style={{backgroundColor: '#ceb07e'}}></div>
               <p className="text-lg md:text-xl text-neutral-600 font-light max-w-2xl mx-auto leading-relaxed mb-8 md:mb-12">
-                Hear from the couples who trusted us to capture their most important day
+                Hear from the clients who trusted us to capture their most important moments
               </p>
               <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 md:space-x-12 mb-8 md:mb-12 scroll-animate fade-up delay-200">
                 <div className="text-center">
@@ -626,7 +682,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 md:mb-16 scroll-animate fade-up">
               <div className="bg-red-600 text-white px-4 md:px-6 py-2 rounded-full inline-block mb-4 md:mb-6 text-xs md:text-sm font-medium">
-                ⚡ NOW ACCEPTING BOOKINGS: Secure Your Date!
+                ⚡ NOW BOOKING: Secure Your Date!
               </div>
               <h2 className="text-4xl md:text-6xl lg:text-7xl font-light mb-4 md:mb-6 leading-tight tracking-tight">
                 Secure <span className="italic" style={{color: '#ceb07e'}}>Your Date</span> Today
@@ -637,7 +693,7 @@ export default function Home() {
               </p>
               <div className="w-16 h-px bg-neutral-500 mx-auto mb-6 md:mb-8"></div>
               <p className="text-base md:text-lg font-light text-neutral-300 leading-relaxed max-w-2xl mx-auto">
-                Don&apos;t let your dream wedding photos slip away. Book your free consultation now and let&apos;s discuss how to make your vision a reality.
+                Tell us about your event and let&apos;s make it unforgettable. Book your free consultation now and we&apos;ll discuss how to bring your vision to life.
               </p>
               <div className="mt-4 md:mt-6 text-neutral-400 text-xs md:text-sm">
                 ✓ Quick response time  ✓ No sales pressure  ✓ Custom package options
@@ -655,6 +711,7 @@ export default function Home() {
                   type="text"
                   id="fullName"
                   name="fullName"
+                  autoComplete="name"
                   className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
                   placeholder="Enter your full name"
                   required
@@ -669,6 +726,8 @@ export default function Home() {
                   type="email"
                   id="email"
                   name="email"
+                  autoComplete="email"
+                  inputMode="email"
                   className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
                   placeholder="your.email@example.com"
                   required
@@ -683,6 +742,8 @@ export default function Home() {
                   type="tel"
                   id="phone"
                   name="phone"
+                  autoComplete="tel"
+                  inputMode="tel"
                   className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
                   placeholder="(555) 123-4567"
                   required
@@ -690,34 +751,31 @@ export default function Home() {
               </div>
 
               <div>
-                <label htmlFor="weddingDate" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
-                  Wedding Date (Approximate)
+                <label htmlFor="serviceType" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  Service Interested In *
                 </label>
-                <input
-                  type="text"
-                  id="weddingDate"
-                  name="weddingDate"
-                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
-                  placeholder="e.g., Fall 2025 or June 2026"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="dreamWedding" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
-                  Describe Your Dream Wedding
-                </label>
-                <textarea
-                  id="dreamWedding"
-                  name="dreamWedding"
-                  rows={3}
-                  className="w-full bg-transparent border border-neutral-500 rounded-lg py-4 px-4 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light resize-vertical"
-                  placeholder="Tell us about your vision, style, location, or any special details..."
-                ></textarea>
+                <select
+                  id="serviceType"
+                  name="serviceType"
+                  value={selectedService}
+                  onChange={(e) => setSelectedService(e.target.value)}
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg appearance-none cursor-pointer"
+                  required
+                >
+                  <option value="" disabled className="bg-neutral-900 text-neutral-400">Select a service</option>
+                  <option value="Wedding" className="bg-neutral-900 text-white">Wedding</option>
+                  <option value="Pre-Wedding / Engagement" className="bg-neutral-900 text-white">Pre-Wedding / Engagement</option>
+                  <option value="Quinceañera" className="bg-neutral-900 text-white">Quinceañera (15s)</option>
+                  <option value="Family Portraits" className="bg-neutral-900 text-white">Family Portraits</option>
+                  <option value="Luxury Photobooth" className="bg-neutral-900 text-white">Luxury Photobooth</option>
+                  <option value="Professional Headshots" className="bg-neutral-900 text-white">Professional Headshots</option>
+                  <option value="Other" className="bg-neutral-900 text-white">Other</option>
+                </select>
               </div>
 
               {/* Trust Signals */}
               <div className="bg-white/5 rounded-lg p-4 text-center text-sm text-neutral-300">
-                <p className="text-xs opacity-75">Join 100+ couples who&apos;ve trusted us with their special day</p>
+                <p className="text-xs opacity-75">Join 100+ clients who&apos;ve trusted us with their special moments</p>
               </div>
 
               <div className="pt-6 md:pt-8">
@@ -979,7 +1037,7 @@ export default function Home() {
                       </div>
                     </div>
                     <p className="text-neutral-300 font-light text-sm">
-                      Join couples who&apos;ve already booked their dream photographer with Sol Imagery!
+                      Join the clients who&apos;ve already booked their dream photographer with Sol Imagery!
                     </p>
                   </div>
                 </div>
@@ -1007,8 +1065,11 @@ export default function Home() {
               <h3 className="font-light text-sm uppercase tracking-[0.2em] text-neutral-900 mb-4">Services</h3>
               <ul className="space-y-2 text-neutral-600 font-light text-sm">
                 <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Weddings</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Portraits</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Engagements</a></li>
+                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Pre-Wedding / Engagement</a></li>
+                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Quinceañeras</a></li>
+                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Family Portraits</a></li>
+                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Luxury Photobooth</a></li>
+                <li><a href="#headshots" className="hover:text-neutral-900 transition-colors">Professional Headshots</a></li>
               </ul>
             </div>
             <div>
@@ -1022,7 +1083,7 @@ export default function Home() {
             <div>
               <h3 className="font-light text-sm uppercase tracking-[0.2em] text-neutral-900 mb-4">follow along @solimageryla</h3>
               <p className="text-neutral-600 font-light text-sm mb-4">
-                Follow along for inspiration, behind-the-scenes peeks, and the artistry that defines our passion for wedding photography.
+                Follow along for inspiration, behind-the-scenes peeks, and the artistry that defines our passion for photography.
               </p>
               <div className="flex space-x-4 text-neutral-600 font-light text-sm">
                 <a href="https://www.instagram.com/solimageryla/" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 transition-colors">Instagram →</a>
