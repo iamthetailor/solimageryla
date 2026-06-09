@@ -8,10 +8,18 @@ export default function ThankYou() {
     // Fire the Meta conversion. Tying the Lead event to this dedicated /thank-you
     // URL gives Meta a clean, deliberate conversion signal (instead of the
     // auto-detected "Subscribe" guessed from the contact form).
-    // Also re-fire PageView so the /thank-you URL is registered on client-side
-    // (SPA) navigation, where the layout <Script> does not re-run. fbq queues
-    // calls made before the pixel finishes loading, so this is safe.
+    //
+    // Re-fire PageView so the /thank-you URL is registered on client-side (SPA)
+    // navigation, where the layout <Script> does not re-run. This keeps the
+    // URL-based conversion option alive in Ads Manager. fbq queues calls made
+    // before the pixel finishes loading, so this is safe.
     window.fbq?.('track', 'PageView');
+
+    // Guard the conversion against double-counting: a refresh, back/forward, or
+    // bookmark hit of this URL would otherwise re-fire Lead and inflate
+    // conversions. Fire it at most once per browser session.
+    if (sessionStorage.getItem('sol_lead_fired')) return;
+    sessionStorage.setItem('sol_lead_fired', '1');
     window.fbq?.('track', 'Lead');
   }, []);
 
