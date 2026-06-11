@@ -4,10 +4,10 @@ import nodemailer from 'nodemailer';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, phone, serviceType } = body;
+    const { fullName, email, phone, serviceType, eventDate, city } = body;
 
-    // Validate required fields
-    if (!fullName || !email || !phone || !serviceType) {
+    // Validate required fields (email is optional — phone is the priority contact)
+    if (!fullName || !phone || !serviceType || !eventDate || !city) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -39,9 +39,11 @@ export async function POST(request: NextRequest) {
             <div style="margin-bottom: 25px;">
               <h2 style="color: #333; font-size: 20px; margin-bottom: 15px; font-weight: 400;">Contact Information</h2>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Name:</strong> ${fullName}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #ceb07e; text-decoration: none;">${email}</a></p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> ${email ? `<a href="mailto:${email}" style="color: #ceb07e; text-decoration: none;">${email}</a>` : 'Not provided'}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${phone}" style="color: #ceb07e; text-decoration: none;">${phone}</a></p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${serviceType}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Event Date:</strong> ${eventDate}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Location:</strong> ${city}</p>
             </div>
             
             <div style="background-color: #ceb07e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 30px;">
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
             <div style="background-color: #f8f8f8; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
               <h2 style="color: #333; font-size: 18px; margin-bottom: 15px; font-weight: 400;">What happens next?</h2>
               <ul style="color: #555; font-size: 16px; line-height: 1.6; margin: 0; padding-left: 20px;">
-                <li style="margin-bottom: 8px;">We'll reach out to you within 24 hours to schedule your free consultation</li>
+                <li style="margin-bottom: 8px;">Our representative Kevin will be reaching out to you via text as soon as possible</li>
                 <li style="margin-bottom: 8px;">During our call, we'll discuss your vision, timeline, and package options</li>
                 <li style="margin-bottom: 8px;">We'll provide a custom quote tailored to your needs</li>
                 <li>If you're ready to move forward, we'll lock in your booking!</li>
@@ -100,9 +102,11 @@ export async function POST(request: NextRequest) {
       `,
     };
 
-    // Send both emails
+    // Always notify the business; only send the client confirmation if they gave an email
     await transporter.sendMail(businessEmailContent);
-    await transporter.sendMail(clientEmailContent);
+    if (email) {
+      await transporter.sendMail(clientEmailContent);
+    }
 
     return NextResponse.json(
       { message: 'Emails sent successfully' },
