@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
@@ -10,6 +10,62 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('');
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const modalPanelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
+  const openContactModal = (service?: string) => {
+    if (service !== undefined) setSelectedService(service);
+    setSubmitStatus('idle');
+    setIsContactModalOpen(true);
+  };
+  const closeContactModal = () => setIsContactModalOpen(false);
+
+  // While the contact modal is open: lock body scroll, manage focus, and trap Tab + Escape
+  useEffect(() => {
+    if (!isContactModalOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Remember the trigger element, then move focus into the dialog
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    const panel = modalPanelRef.current;
+    const getFocusable = () =>
+      panel
+        ? Array.from(
+            panel.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => el.offsetParent !== null)
+        : [];
+    panel?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsContactModalOpen(false);
+        return;
+      }
+      if (e.key === 'Tab') {
+        const items = getFocusable();
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocusedRef.current?.focus?.();
+    };
+  }, [isContactModalOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -124,7 +180,7 @@ export default function Home() {
               <a href="#about" className={`py-2 transition-all duration-300 ${
                 isScrolled ? 'hover:text-neutral-900' : 'hover:text-white'
               }`}>ABOUT</a>
-              <a href="#contact" className={`bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full transition-all duration-300 hover:bg-white ${
+              <a href="#contact" onClick={(e) => { e.preventDefault(); openContactModal(); }} className={`bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full transition-all duration-300 hover:bg-white ${
                 isScrolled ? 'text-neutral-900 bg-neutral-900 hover:bg-neutral-700' : 'text-white'
               }`} 
               onMouseEnter={(e) => {
@@ -226,9 +282,9 @@ export default function Home() {
                 >
                   About
                 </a>
-                <a 
-                  href="#contact" 
-                  onClick={closeMobileMenu}
+                <a
+                  href="#contact"
+                  onClick={(e) => { e.preventDefault(); closeMobileMenu(); openContactModal(); }}
                   className="block text-neutral-900 font-light text-lg uppercase tracking-[0.25em] hover:text-neutral-600 transition-colors duration-200"
                 >
                   Book Now
@@ -283,7 +339,7 @@ export default function Home() {
               Los Angeles&apos; luxury photography studio, crafting unforgettable images for life&apos;s biggest moments. Now booking 2026-2027.
             </p>
             <div className="flex justify-center items-center mb-12 md:mb-16 hero-element">
-              <a href="#contact" className="bg-white text-neutral-900 px-6 md:px-10 py-3 md:py-5 font-medium text-xs md:text-sm uppercase tracking-[0.2em] hover:bg-neutral-100 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+              <a href="#contact" onClick={(e) => { e.preventDefault(); openContactModal(); }} className="bg-white text-neutral-900 px-6 md:px-10 py-3 md:py-5 font-medium text-xs md:text-sm uppercase tracking-[0.2em] hover:bg-neutral-100 transition-all duration-300 transform hover:scale-105 shadow-2xl">
                 <span className="hidden sm:inline">Book Free Consultation →</span>
                 <span className="sm:hidden">Book Now →</span>
               </a>
@@ -402,8 +458,9 @@ export default function Home() {
                 <p className="text-sm md:text-base text-neutral-600 mb-6 md:mb-8 max-w-xl mx-auto">
                   Join the clients who&apos;ve chosen Sol Imagery to capture their most precious moments
                 </p>
-                <a 
-                  href="#contact" 
+                <a
+                  href="#contact"
+                  onClick={(e) => { e.preventDefault(); openContactModal(); }}
                   className="inline-flex items-center text-white px-10 py-4 rounded-full font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                   style={{backgroundColor: '#ceb07e'}}
                   onMouseEnter={(e) => {
@@ -499,16 +556,16 @@ export default function Home() {
 
             <div className="flex flex-wrap justify-center gap-6 md:gap-8">
               {[
-                { number: '01', title: 'Weddings', service: 'Wedding', delay: 'delay-200', copy: 'Full-day coverage that transforms your wedding into a timeless visual story.' },
-                { number: '02', title: 'Pre-Wedding / Engagement', service: 'Pre-Wedding / Engagement', delay: 'delay-400', copy: 'Pre-shoot sessions that tell the love story leading up to your big day.' },
-                { number: '03', title: 'Quinceañeras', service: 'Quinceañera', delay: 'delay-600', copy: 'Elegant 15 años photography capturing a once-in-a-lifetime celebration.' },
-                { number: '04', title: 'Family Portraits', service: 'Family Portraits', delay: 'delay-800', copy: 'Sophisticated family sessions that turn everyday love into heirloom art.' },
-                { number: '05', title: 'Luxury Photobooth', service: 'Luxury Photobooth', delay: 'delay-1000', copy: 'Studio-quality portrait booth for events — clean, modern, unforgettable keepsakes.' },
+                { number: '01', title: 'Photobooth', service: 'Photobooth', delay: 'delay-200', copy: 'Studio-quality portrait booth for events — clean, modern, unforgettable keepsakes.' },
+                { number: '02', title: 'Wedding Photography', service: 'Wedding', delay: 'delay-400', copy: 'Full-day coverage that transforms your wedding into a timeless visual story.' },
+                { number: '03', title: 'Pre-Wedding / Engagement', service: 'Pre-Wedding / Engagement', delay: 'delay-600', copy: 'Pre-shoot sessions that tell the love story leading up to your big day.' },
+                { number: '04', title: 'Quinceañeras', service: 'Quinceañera', delay: 'delay-800', copy: 'Elegant 15 años photography capturing a once-in-a-lifetime celebration.' },
+                { number: '05', title: 'Family Portraits', service: 'Family Portraits', delay: 'delay-1000', copy: 'Sophisticated family sessions that turn everyday love into heirloom art.' },
               ].map((card) => (
                 <a
                   key={card.service}
                   href="#contact"
-                  onClick={() => setSelectedService(card.service)}
+                  onClick={(e) => { e.preventDefault(); openContactModal(card.service); }}
                   className={`group block bg-white p-6 md:p-10 shadow-sm hover:shadow-xl transition-all duration-500 w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] scroll-animate fade-up ${card.delay}`}
                 >
                   <div
@@ -560,7 +617,7 @@ export default function Home() {
             </p>
             <a
               href="#contact"
-              onClick={() => setSelectedService('Professional Headshots')}
+              onClick={(e) => { e.preventDefault(); openContactModal('Professional Headshots'); }}
               className="inline-flex items-center text-white px-8 py-3 font-medium text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
               style={{ backgroundColor: '#ceb07e' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#b8996b'; }}
@@ -596,7 +653,7 @@ export default function Home() {
               <div className="order-2 lg:order-2 lg:pl-8 scroll-animate slide-right delay-400">
                 <p className="text-lg text-neutral-700 font-light leading-[1.8]">
                   We are a team of Los Angeles photographers who specialize in life&apos;s biggest celebrations — weddings,
-                  quinceañeras, family portraits, and luxury photobooth experiences. We believe in creating more than
+                  quinceañeras, family portraits, and photobooth experiences. We believe in creating more than
                   just beautiful photos; we strive to encapsulate the true essence of your moments. From candid smiles
                   to grand celebrations, our collective expertise ensures every detail is thoughtfully documented. With
                   a seamless blend of creativity and professionalism, we make your experience enjoyable and your
@@ -703,11 +760,57 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Simplified Contact Form */}
-            <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 md:space-y-6 scroll-animate fade-up delay-200">
+            {/* CTA — opens the contact modal */}
+            <div className="text-center scroll-animate fade-up delay-200">
+              <button
+                onClick={() => openContactModal()}
+                className="group relative inline-flex items-center justify-center text-white px-10 md:px-16 py-5 md:py-7 font-light text-sm md:text-base uppercase tracking-[0.15em] md:tracking-[0.25em] transition-all duration-500 focus:outline-none hover:-translate-y-0.5"
+                style={{
+                  background: `linear-gradient(135deg, #b8996b 0%, #c2a474 50%, #b8996b 100%)`,
+                  boxShadow: `0 1px 3px rgba(0,0,0,0.12), 0 4px 12px rgba(206,176,126,0.4), inset 0 1px 0 rgba(255,255,255,0.2)`,
+                  border: '1px solid rgba(255,255,255,0.2)'
+                }}
+              >
+                <span className="mr-3">✨</span>
+                Book Free Consultation
+                <span className="ml-3">→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Form Modal — always mounted, visibility toggled (keeps global animation styles alive) */}
+        <div
+          className={`fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-start md:items-center justify-center p-4 md:p-6 overflow-y-auto transition-opacity duration-300 ${isContactModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+          onClick={closeContactModal}
+          aria-hidden={!isContactModalOpen}
+        >
+          <div
+            ref={modalPanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-modal-title"
+            tabIndex={-1}
+            className="relative bg-neutral-900 w-full max-w-2xl my-8 md:my-0 max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-10 border border-white/10 focus:outline-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeContactModal}
+              aria-label="Close"
+              className="absolute top-4 right-4 z-10 text-neutral-400 hover:text-white transition-colors text-2xl leading-none"
+            >
+              ✕
+            </button>
+            <div className="text-center mb-6">
+              <p className="text-xs font-light tracking-widest text-neutral-400 uppercase mb-2">Free Consultation • No Obligation</p>
+              <h3 id="contact-modal-title" className="text-2xl md:text-3xl font-light text-white tracking-tight">
+                Secure <span className="italic" style={{color: '#ceb07e'}}>Your Date</span>
+              </h3>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
               {/* Essential Fields Only */}
               <div>
-                <label htmlFor="fullName" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                <label htmlFor="fullName" className="block text-sm font-light text-neutral-400 mb-2">
                   Full Name *
                 </label>
                 <input
@@ -715,46 +818,47 @@ export default function Home() {
                   id="fullName"
                   name="fullName"
                   autoComplete="name"
-                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                  className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
                   placeholder="Enter your full name"
                   required
                 />
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  autoComplete="email"
-                  inputMode="email"
-                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
-                  placeholder="your.email@example.com"
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-light text-neutral-400 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                    placeholder="(555) 123-4567"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-light text-neutral-400 mb-2">
+                    Email Address (optional)
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                    placeholder="your.email@example.com"
+                  />
+                </div>
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  autoComplete="tel"
-                  inputMode="tel"
-                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
-                  placeholder="(555) 123-4567"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="serviceType" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                <label htmlFor="serviceType" className="block text-sm font-light text-neutral-400 mb-2">
                   Service Interested In *
                 </label>
                 <select
@@ -762,7 +866,7 @@ export default function Home() {
                   name="serviceType"
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg appearance-none cursor-pointer"
+                  className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg appearance-none cursor-pointer"
                   required
                 >
                   <option value="" disabled className="bg-neutral-900 text-neutral-400">Select a service</option>
@@ -770,10 +874,41 @@ export default function Home() {
                   <option value="Pre-Wedding / Engagement" className="bg-neutral-900 text-white">Pre-Wedding / Engagement</option>
                   <option value="Quinceañera" className="bg-neutral-900 text-white">Quinceañera (15s)</option>
                   <option value="Family Portraits" className="bg-neutral-900 text-white">Family Portraits</option>
-                  <option value="Luxury Photobooth" className="bg-neutral-900 text-white">Luxury Photobooth</option>
+                  <option value="Photobooth" className="bg-neutral-900 text-white">Photobooth</option>
                   <option value="Professional Headshots" className="bg-neutral-900 text-white">Professional Headshots</option>
                   <option value="Other" className="bg-neutral-900 text-white">Other</option>
                 </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div>
+                  <label htmlFor="eventDate" className="block text-sm font-light text-neutral-400 mb-2">
+                    Event Date *
+                  </label>
+                  <input
+                    type="date"
+                    id="eventDate"
+                    name="eventDate"
+                    style={{ colorScheme: 'dark' }}
+                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="city" className="block text-sm font-light text-neutral-400 mb-2">
+                    Location (City) *
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    autoComplete="address-level2"
+                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                    placeholder="Los Angeles"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Trust Signals */}
@@ -785,7 +920,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="group relative w-full text-white px-8 md:px-16 py-6 md:py-8 font-light text-sm md:text-base uppercase tracking-[0.15em] md:tracking-[0.25em] transition-all duration-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  className="group relative w-full text-white px-4 md:px-16 py-4 md:py-8 font-light text-sm md:text-base uppercase tracking-[0.08em] md:tracking-[0.25em] transition-all duration-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
                   style={{
                     background: `linear-gradient(135deg, #b8996b 0%, #c2a474 50%, #b8996b 100%)`,
                     borderRadius: '0',
@@ -831,10 +966,10 @@ export default function Home() {
                   ></div>
                   
                   {/* Button content */}
-                  <span className="relative z-10 flex items-center justify-center">
+                  <span className="relative z-10 flex items-center justify-center whitespace-nowrap">
                     {isSubmitting ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin -ml-1 mr-2 md:mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -842,9 +977,9 @@ export default function Home() {
                       </>
                     ) : (
                       <>
-                        <span className="mr-3">✨</span>
+                        <span className="mr-2 md:mr-3">✨</span>
                         Secure Your Date
-                        <span className="ml-3">→</span>
+                        <span className="ml-2 md:ml-3">→</span>
                       </>
                     )}
                   </span>
@@ -979,11 +1114,6 @@ export default function Home() {
                   .hero-element:nth-child(4) { animation-delay: 800ms; }
                   .hero-element:nth-child(5) { animation-delay: 1000ms; }
                 `}</style>
-                <div className="text-center mt-4 space-y-2">
-                  <p className="text-neutral-400 text-sm">
-                    ⚡ We&apos;ll reach out within 24 hours to schedule your consultation
-                  </p>
-                </div>
               </div>
 
               {/* Error Message */}
@@ -1026,7 +1156,7 @@ export default function Home() {
               )}
             </form>
           </div>
-        </section>
+        </div>
       </main>
 
       {/* Footer */}
@@ -1040,17 +1170,17 @@ export default function Home() {
                 <li><a href="#showcase" className="hover:text-neutral-900 transition-colors">Our Work</a></li>
                 <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Offerings</a></li>
                 <li><a href="#about" className="hover:text-neutral-900 transition-colors">About</a></li>
-                <li><a href="#contact" className="hover:text-neutral-900 transition-colors">Contact</a></li>
+                <li><a href="#contact" onClick={(e) => { e.preventDefault(); openContactModal(); }} className="hover:text-neutral-900 transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
               <h3 className="font-light text-sm uppercase tracking-[0.2em] text-neutral-900 mb-4">Services</h3>
               <ul className="space-y-2 text-neutral-600 font-light text-sm">
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Weddings</a></li>
+                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Photobooth</a></li>
+                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Wedding Photography</a></li>
                 <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Pre-Wedding / Engagement</a></li>
                 <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Quinceañeras</a></li>
                 <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Family Portraits</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Luxury Photobooth</a></li>
                 <li><a href="#headshots" className="hover:text-neutral-900 transition-colors">Professional Headshots</a></li>
               </ul>
             </div>

@@ -49,7 +49,7 @@ export default function ThankYou() {
             style={{ backgroundColor: 'rgba(206, 176, 126, 0.2)' }}
           >
             <p className="text-sm md:text-base font-medium" style={{ color: '#ceb07e' }}>
-              📞 We&apos;ll reach out within 24 hours to schedule your free consultation
+              📞 Our representative Kevin will be reaching out to you via text as soon as possible
             </p>
           </div>
           <p className="text-neutral-400 text-xs md:text-sm">
