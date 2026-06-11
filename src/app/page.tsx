@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'error'>('idle');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('');
@@ -135,9 +137,10 @@ export default function Home() {
         throw new Error('Failed to send message');
       }
 
-      setSubmitStatus('success');
-      setSelectedService('');
-      (e.target as HTMLFormElement).reset();
+      // Redirect to the dedicated conversion page, which fires the Meta `Lead`
+      // event. Keeps conversion data clean (one /thank-you view per lead).
+      router.push('/thank-you');
+      return;
     } catch (error) {
       console.error('Form submission error:', error);
       setSubmitStatus('error');
@@ -1112,27 +1115,6 @@ export default function Home() {
                   .hero-element:nth-child(5) { animation-delay: 1000ms; }
                 `}</style>
               </div>
-
-              {/* Success Message */}
-              {submitStatus === 'success' && (
-                <div className="text-center pt-6">
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-6">
-                    <div className="text-6xl mb-4">🎉</div>
-                    <h3 className="text-xl font-medium text-white mb-2">Thank You!</h3>
-                    <p className="text-neutral-300 font-light text-sm mb-4">
-                      Your consultation request has been received successfully!
-                    </p>
-                    <div className="rounded-lg p-4 mb-4" style={{backgroundColor: 'rgba(206, 176, 126, 0.2)'}}>
-                        <p className="text-sm font-medium" style={{color: '#ceb07e'}}>
-                        📞 Our representative Kevin will be reaching out to you via text as soon as possible
-                      </p>
-                    </div>
-                    <p className="text-neutral-400 text-xs">
-                      Questions? Feel free to call us directly or send us a message on Instagram.
-                    </p>
-                  </div>
-                </div>
-              )}
 
               {/* Error Message */}
               {submitStatus === 'error' && (
