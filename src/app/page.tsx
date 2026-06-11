@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -9,6 +9,8 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const modalPanelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   const openContactModal = (service?: string) => {
     if (service !== undefined) setSelectedService(service);
@@ -17,18 +19,49 @@ export default function Home() {
   };
   const closeContactModal = () => setIsContactModalOpen(false);
 
-  // Lock body scroll and enable Escape-to-close while the contact modal is open
+  // While the contact modal is open: lock body scroll, manage focus, and trap Tab + Escape
   useEffect(() => {
     if (!isContactModalOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    // Remember the trigger element, then move focus into the dialog
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    const panel = modalPanelRef.current;
+    const getFocusable = () =>
+      panel
+        ? Array.from(
+            panel.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => el.offsetParent !== null)
+        : [];
+    panel?.focus();
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsContactModalOpen(false);
+      if (e.key === 'Escape') {
+        setIsContactModalOpen(false);
+        return;
+      }
+      if (e.key === 'Tab') {
+        const items = getFocusable();
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocusedRef.current?.focus?.();
     };
   }, [isContactModalOpen]);
 
@@ -750,7 +783,12 @@ export default function Home() {
           aria-hidden={!isContactModalOpen}
         >
           <div
-            className="relative bg-neutral-900 w-full max-w-2xl my-8 md:my-0 max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-10 border border-white/10"
+            ref={modalPanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-modal-title"
+            tabIndex={-1}
+            className="relative bg-neutral-900 w-full max-w-2xl my-8 md:my-0 max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-10 border border-white/10 focus:outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -762,7 +800,7 @@ export default function Home() {
             </button>
             <div className="text-center mb-6">
               <p className="text-xs font-light tracking-widest text-neutral-400 uppercase mb-2">Free Consultation • No Obligation</p>
-              <h3 className="text-2xl md:text-3xl font-light text-white tracking-tight">
+              <h3 id="contact-modal-title" className="text-2xl md:text-3xl font-light text-white tracking-tight">
                 Secure <span className="italic" style={{color: '#ceb07e'}}>Your Date</span>
               </h3>
             </div>

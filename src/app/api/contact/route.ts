@@ -1,10 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+// Escape values before interpolating them into the HTML email templates
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+// Coerce to a trimmed, single-line string capped at maxLength
+const clean = (value: unknown, maxLength: number) =>
+  typeof value === 'string' ? value.replace(/[\r\n]+/g, ' ').trim().slice(0, maxLength) : '';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, phone, serviceType, eventDate, city } = body;
+
+    const fullName = clean(body.fullName, 100);
+    const phone = clean(body.phone, 30);
+    const serviceType = clean(body.serviceType, 60);
+    const eventDate = clean(body.eventDate, 20);
+    const city = clean(body.city, 100);
+    const email = clean(body.email, 254);
 
     // Validate required fields (email is optional — phone is the priority contact)
     if (!fullName || !phone || !serviceType || !eventDate || !city) {
@@ -13,6 +32,32 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Event date must be an ISO calendar date (YYYY-MM-DD), as produced by the date picker
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
+      return NextResponse.json(
+        { error: 'Invalid event date' },
+        { status: 400 }
+      );
+    }
+
+    // If an email was provided, it must look like a valid address
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email address' },
+        { status: 400 }
+      );
+    }
+
+    // Pre-escaped values for safe interpolation into the HTML templates below
+    const safe = {
+      fullName: escapeHtml(fullName),
+      email: escapeHtml(email),
+      phone: escapeHtml(phone),
+      serviceType: escapeHtml(serviceType),
+      eventDate: escapeHtml(eventDate),
+      city: escapeHtml(city),
+    };
 
     // Create transporter using Gmail SMTP
     const transporter = nodemailer.createTransport({
@@ -38,12 +83,12 @@ export async function POST(request: NextRequest) {
             
             <div style="margin-bottom: 25px;">
               <h2 style="color: #333; font-size: 20px; margin-bottom: 15px; font-weight: 400;">Contact Information</h2>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Name:</strong> ${fullName}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> ${email ? `<a href="mailto:${email}" style="color: #ceb07e; text-decoration: none;">${email}</a>` : 'Not provided'}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${phone}" style="color: #ceb07e; text-decoration: none;">${phone}</a></p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${serviceType}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Event Date:</strong> ${eventDate}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Location:</strong> ${city}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Name:</strong> ${safe.fullName}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> ${email ? `<a href="mailto:${safe.email}" style="color: #ceb07e; text-decoration: none;">${safe.email}</a>` : 'Not provided'}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${safe.phone}" style="color: #ceb07e; text-decoration: none;">${safe.phone}</a></p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${safe.serviceType}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Event Date:</strong> ${safe.eventDate}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Location:</strong> ${safe.city}</p>
             </div>
             
             <div style="background-color: #ceb07e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 30px;">
@@ -69,12 +114,12 @@ export async function POST(request: NextRequest) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #ceb07e; font-size: 28px; margin: 0; font-weight: 300;">Thank You, ${fullName}!</h1>
+              <h1 style="color: #ceb07e; font-size: 28px; margin: 0; font-weight: 300;">Thank You, ${safe.fullName}!</h1>
               <div style="width: 60px; height: 2px; background-color: #ceb07e; margin: 15px auto;"></div>
             </div>
             
             <p style="color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
-              Thanks for reaching out about your ${serviceType.toLowerCase()} — we're thrilled you're considering Sol Imagery! Your consultation request has been received, and we can't wait to learn more about your vision.
+              Thanks for reaching out about your ${escapeHtml(serviceType.toLowerCase())} — we're thrilled you're considering Sol Imagery! Your consultation request has been received, and we can't wait to learn more about your vision.
             </p>
             
             <div style="background-color: #f8f8f8; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
