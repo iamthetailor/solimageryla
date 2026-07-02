@@ -14,6 +14,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Constrain the preferred contact method to the known radio values before it goes
+    // into the notification email HTML. It is otherwise attacker-controllable via a
+    // crafted POST and is interpolated unescaped, so whitelist it here.
+    const ALLOWED_CONTACT_METHODS = ['Text', 'Call', 'Either'];
+    const safeContactMethod = ALLOWED_CONTACT_METHODS.includes(contactMethod)
+      ? contactMethod
+      : 'Not specified';
+
     // Create transporter using Gmail SMTP
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -41,7 +49,7 @@ export async function POST(request: NextRequest) {
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Name:</strong> ${fullName}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #ceb07e; text-decoration: none;">${email}</a></p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${phone}" style="color: #ceb07e; text-decoration: none;">${phone}</a></p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Preferred Contact:</strong> ${contactMethod || 'Not specified'}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Preferred Contact:</strong> ${safeContactMethod}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${serviceType}</p>
             </div>
             

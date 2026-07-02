@@ -13,9 +13,13 @@ export default function Home() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const modalPanelRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const navHomeRef = useRef<HTMLAnchorElement>(null);
 
   const openContactModal = (service?: string) => {
-    if (service !== undefined) setSelectedService(service);
+    // Always sync the service: a package CTA passes its tier; a generic CTA passes
+    // nothing and must RESET the select — otherwise a previously chosen package
+    // lingers in the controlled <select> and gets submitted by mistake.
+    setSelectedService(service ?? '');
     setSubmitStatus('idle');
     setIsContactModalOpen(true);
   };
@@ -30,6 +34,9 @@ export default function Home() {
     // Remember the trigger element, then move focus into the dialog
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
     const panel = modalPanelRef.current;
+    // Capture the stable fallback-focus node now (the nav logo never unmounts), so the
+    // cleanup doesn't read a possibly-changed ref.
+    const navHome = navHomeRef.current;
     const getFocusable = () =>
       panel
         ? Array.from(
@@ -38,7 +45,10 @@ export default function Home() {
             )
           ).filter((el) => el.offsetParent !== null)
         : [];
-    panel?.focus();
+    // Focus the first focusable element (not the panel itself) so the Tab trap's
+    // first/last checks engage from the very first keypress.
+    const focusables = getFocusable();
+    (focusables[0] ?? panel)?.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -63,7 +73,16 @@ export default function Home() {
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
-      previouslyFocusedRef.current?.focus?.();
+      // Restore focus to the trigger — but only if it's still visible. When the modal
+      // was opened from the mobile menu, the trigger lives in a now-hidden drawer, so
+      // focus() on it is a no-op and focus falls to <body>; fall back to a stable,
+      // always-visible control (the nav logo) in that case.
+      const trigger = previouslyFocusedRef.current;
+      if (trigger && trigger.isConnected && trigger.offsetParent !== null) {
+        trigger.focus?.();
+      } else {
+        navHome?.focus?.();
+      }
     };
   }, [isContactModalOpen]);
 
@@ -137,16 +156,23 @@ export default function Home() {
         throw new Error('Failed to send message');
       }
 
-      // Redirect to the dedicated conversion page, which fires the Meta `Lead`
-      // event. Keeps conversion data clean (one /thank-you view per lead).
-      // Pass the chosen service so /thank-you can attach package + value to Lead.
+      // Stash the chosen service as the "pending lead" signal, then redirect to the
+      // dedicated conversion page. /thank-you consumes this flag to fire the Meta `Lead`
+      // (with package + value) exactly once per real submission — so only genuine
+      // submits convert, never a direct/bookmarked visit to /thank-you.
       const service = String(data.serviceType || '');
-      router.push(`/thank-you?service=${encodeURIComponent(service)}`);
+      try {
+        sessionStorage.setItem('sol_pending_lead', service);
+      } catch {
+        // sessionStorage blocked (privacy mode) — proceed without the conversion signal.
+      }
+      // Leave isSubmitting = true so the submit button stays disabled while the
+      // /thank-you route loads, preventing a double-submit (and duplicate emails).
+      router.push('/thank-you');
       return;
     } catch (error) {
       console.error('Form submission error:', error);
       setSubmitStatus('error');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -162,7 +188,7 @@ export default function Home() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex justify-between items-center">
-            <a href="#home" className="flex items-center hover:opacity-80 transition-opacity">
+            <a ref={navHomeRef} href="#home" className="flex items-center hover:opacity-80 transition-opacity">
               <img src="/images/sol-imagery-logo-gold.png" alt="Sol Imagery" className="h-14 w-auto" />
             </a>
             <div className={`hidden md:flex space-x-8 font-light text-xs uppercase tracking-[0.2em] transition-colors duration-200 ${

@@ -5,32 +5,33 @@ import Link from 'next/link';
 
 export default function ThankYou() {
   useEffect(() => {
-    // Fire the Meta conversion. Tying the Lead event to this dedicated /thank-you
-    // URL gives Meta a clean, deliberate conversion signal (instead of the
-    // auto-detected "Subscribe" guessed from the contact form).
-    //
-    // Re-fire PageView so the /thank-you URL is registered on client-side (SPA)
-    // navigation, where the layout <Script> does not re-run. This keeps the
-    // URL-based conversion option alive in Ads Manager. fbq queues calls made
-    // before the pixel finishes loading, so this is safe.
+    // Only treat this view as a real conversion if we actually arrived from a form
+    // submission. handleSubmit stashes the chosen service under `sol_pending_lead`
+    // immediately before redirecting here; we consume it once. This means direct
+    // visits, refreshes, shared/bookmarked links, and crawlers never fire a phantom
+    // Lead — and because the flag is consumed (not a sticky once-per-session guard),
+    // a second genuine submission in the same session fires its own Lead too.
+    let service: string | null = null;
+    try {
+      service = sessionStorage.getItem('sol_pending_lead');
+      if (service !== null) sessionStorage.removeItem('sol_pending_lead');
+    } catch {
+      // sessionStorage blocked (privacy mode) — treat as no pending conversion.
+    }
+    if (service === null) return;
+
+    // We reached /thank-you via client-side (SPA) navigation from the form, where the
+    // layout's base pixel does NOT re-fire PageView — so fire it once here. Gating it
+    // on the pending flag avoids the double-count that a hard load would otherwise cause.
     window.fbq?.('track', 'PageView');
 
-    // Guard the conversion against double-counting: a refresh, back/forward, or
-    // bookmark hit of this URL would otherwise re-fire Lead and inflate
-    // conversions. Fire it at most once per browser session.
-    if (sessionStorage.getItem('sol_lead_fired')) return;
-    sessionStorage.setItem('sol_lead_fired', '1');
-
-    // Attach the chosen package to the Lead so Ads Manager can attribute
-    // conversions (and value) per photobooth tier. The `service` comes from the
-    // contact form's redirect (?service=…). Read window.location directly so we
-    // stay client-only and avoid a useSearchParams Suspense boundary.
+    // Attach the chosen package so Ads Manager can attribute conversions (and value)
+    // per photobooth tier.
     const PACKAGES: Record<string, { content_name: string; value: number }> = {
       'Luxury Photobooth — Essential': { content_name: 'Essential', value: 400 },
       'Luxury Photobooth — Signature': { content_name: 'Signature', value: 600 },
       'Luxury Photobooth — Premier': { content_name: 'Premier', value: 1100 },
     };
-    const service = new URLSearchParams(window.location.search).get('service') || '';
     const pkg = PACKAGES[service];
     const leadParams = pkg
       ? { content_name: pkg.content_name, content_category: 'Luxury Photobooth', value: pkg.value, currency: 'USD' }
