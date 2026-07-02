@@ -21,28 +21,18 @@ export async function POST(request: NextRequest) {
     const fullName = clean(body.fullName, 100);
     const phone = clean(body.phone, 30);
     const serviceType = clean(body.serviceType, 60);
-    const eventDate = clean(body.eventDate, 20);
-    const city = clean(body.city, 100);
     const email = clean(body.email, 254);
 
-    // Validate required fields (email is optional — phone is the priority contact)
-    if (!fullName || !phone || !serviceType || !eventDate || !city) {
+    // Validate required fields
+    if (!fullName || !phone || !serviceType || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Event date must be an ISO calendar date (YYYY-MM-DD), as produced by the date picker
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
-      return NextResponse.json(
-        { error: 'Invalid event date' },
-        { status: 400 }
-      );
-    }
-
-    // If an email was provided, it must look like a valid address
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    // Email must look like a valid address
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { error: 'Invalid email address' },
         { status: 400 }
@@ -62,8 +52,6 @@ export async function POST(request: NextRequest) {
       email: escapeHtml(email),
       phone: escapeHtml(phone),
       serviceType: escapeHtml(serviceType),
-      eventDate: escapeHtml(eventDate),
-      city: escapeHtml(city),
     };
 
     // Create transporter using Gmail SMTP
@@ -91,12 +79,10 @@ export async function POST(request: NextRequest) {
             <div style="margin-bottom: 25px;">
               <h2 style="color: #333; font-size: 20px; margin-bottom: 15px; font-weight: 400;">Contact Information</h2>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Name:</strong> ${safe.fullName}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> ${email ? `<a href="mailto:${safe.email}" style="color: #ceb07e; text-decoration: none;">${safe.email}</a>` : 'Not provided'}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> <a href="mailto:${safe.email}" style="color: #ceb07e; text-decoration: none;">${safe.email}</a></p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${safe.phone}" style="color: #ceb07e; text-decoration: none;">${safe.phone}</a></p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Preferred Contact:</strong> ${safeContactMethod}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${safe.serviceType}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Event Date:</strong> ${safe.eventDate}</p>
-              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Location:</strong> ${safe.city}</p>
             </div>
             
             <div style="background-color: #ceb07e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 30px;">
@@ -155,11 +141,9 @@ export async function POST(request: NextRequest) {
       `,
     };
 
-    // Always notify the business; only send the client confirmation if they gave an email
+    // Notify the business and send the client their confirmation
     await transporter.sendMail(businessEmailContent);
-    if (email) {
-      await transporter.sendMail(clientEmailContent);
-    }
+    await transporter.sendMail(clientEmailContent);
 
     return NextResponse.json(
       { message: 'Emails sent successfully' },
