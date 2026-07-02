@@ -13,9 +13,13 @@ export default function Home() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const modalPanelRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const navHomeRef = useRef<HTMLAnchorElement>(null);
 
   const openContactModal = (service?: string) => {
-    if (service !== undefined) setSelectedService(service);
+    // Always sync the service: a package CTA passes its tier; a generic CTA passes
+    // nothing and must RESET the select — otherwise a previously chosen package
+    // lingers in the controlled <select> and gets submitted by mistake.
+    setSelectedService(service ?? '');
     setSubmitStatus('idle');
     setIsContactModalOpen(true);
   };
@@ -30,6 +34,9 @@ export default function Home() {
     // Remember the trigger element, then move focus into the dialog
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
     const panel = modalPanelRef.current;
+    // Capture the stable fallback-focus node now (the nav logo never unmounts), so the
+    // cleanup doesn't read a possibly-changed ref.
+    const navHome = navHomeRef.current;
     const getFocusable = () =>
       panel
         ? Array.from(
@@ -38,7 +45,10 @@ export default function Home() {
             )
           ).filter((el) => el.offsetParent !== null)
         : [];
-    panel?.focus();
+    // Focus the first focusable element (not the panel itself) so the Tab trap's
+    // first/last checks engage from the very first keypress.
+    const focusables = getFocusable();
+    (focusables[0] ?? panel)?.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -63,7 +73,16 @@ export default function Home() {
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
-      previouslyFocusedRef.current?.focus?.();
+      // Restore focus to the trigger — but only if it's still visible. When the modal
+      // was opened from the mobile menu, the trigger lives in a now-hidden drawer, so
+      // focus() on it is a no-op and focus falls to <body>; fall back to a stable,
+      // always-visible control (the nav logo) in that case.
+      const trigger = previouslyFocusedRef.current;
+      if (trigger && trigger.isConnected && trigger.offsetParent !== null) {
+        trigger.focus?.();
+      } else {
+        navHome?.focus?.();
+      }
     };
   }, [isContactModalOpen]);
 
@@ -137,14 +156,23 @@ export default function Home() {
         throw new Error('Failed to send message');
       }
 
-      // Redirect to the dedicated conversion page, which fires the Meta `Lead`
-      // event. Keeps conversion data clean (one /thank-you view per lead).
+      // Stash the chosen service as the "pending lead" signal, then redirect to the
+      // dedicated conversion page. /thank-you consumes this flag to fire the Meta `Lead`
+      // (with package + value) exactly once per real submission — so only genuine
+      // submits convert, never a direct/bookmarked visit to /thank-you.
+      const service = String(data.serviceType || '');
+      try {
+        sessionStorage.setItem('sol_pending_lead', service);
+      } catch {
+        // sessionStorage blocked (privacy mode) — proceed without the conversion signal.
+      }
+      // Leave isSubmitting = true so the submit button stays disabled while the
+      // /thank-you route loads, preventing a double-submit (and duplicate emails).
       router.push('/thank-you');
       return;
     } catch (error) {
       console.error('Form submission error:', error);
       setSubmitStatus('error');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -160,7 +188,7 @@ export default function Home() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex justify-between items-center">
-            <a href="#home" className="flex items-center hover:opacity-80 transition-opacity">
+            <a ref={navHomeRef} href="#home" className="flex items-center hover:opacity-80 transition-opacity">
               <img src="/images/sol-imagery-logo-gold.png" alt="Sol Imagery" className="h-14 w-auto" />
             </a>
             <div className={`hidden md:flex space-x-8 font-light text-xs uppercase tracking-[0.2em] transition-colors duration-200 ${
@@ -174,9 +202,9 @@ export default function Home() {
               <a href="#showcase" className={`py-2 transition-all duration-300 ${
                 isScrolled ? 'hover:text-neutral-900' : 'hover:text-white'
               }`}>OUR WORK</a>
-              <a href="#offerings" className={`py-2 transition-all duration-300 ${
+              <a href="#pricing" className={`py-2 transition-all duration-300 ${
                 isScrolled ? 'hover:text-neutral-900' : 'hover:text-white'
-              }`}>OFFERINGS</a>
+              }`}>PACKAGES</a>
               <a href="#about" className={`py-2 transition-all duration-300 ${
                 isScrolled ? 'hover:text-neutral-900' : 'hover:text-white'
               }`}>ABOUT</a>
@@ -268,21 +296,21 @@ export default function Home() {
                 >
                   Our Work
                 </a>
-                <a 
-                  href="#offerings" 
+                <a
+                  href="#pricing"
                   onClick={closeMobileMenu}
                   className="block text-neutral-900 font-light text-lg uppercase tracking-[0.25em] hover:text-neutral-600 transition-colors duration-200"
                 >
-                  Offerings
+                  Packages
                 </a>
-                <a 
-                  href="#about" 
+                <a
+                  href="#about"
                   onClick={closeMobileMenu}
                   className="block text-neutral-900 font-light text-lg uppercase tracking-[0.25em] hover:text-neutral-600 transition-colors duration-200"
                 >
                   About
                 </a>
-                <a
+                <a 
                   href="#contact"
                   onClick={(e) => { e.preventDefault(); closeMobileMenu(); openContactModal(); }}
                   className="block text-neutral-900 font-light text-lg uppercase tracking-[0.25em] hover:text-neutral-600 transition-colors duration-200"
@@ -540,91 +568,121 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Offerings Section */}
-        <section id="offerings" className="py-12 md:py-24 px-6 bg-neutral-50">
+        {/* Photobooth Packages / Pricing */}
+        <section id="pricing" className="py-12 md:py-24 px-6 bg-neutral-50">
           <div className="max-w-6xl mx-auto">
+            {/* Header */}
             <div className="text-center mb-12 md:mb-20 scroll-animate fade-up">
-              <p className="text-xs md:text-sm font-light text-neutral-500 uppercase tracking-[0.2em] mb-3 md:mb-4">tailored for you</p>
+              <p className="text-xs md:text-sm font-light text-neutral-500 uppercase tracking-[0.2em] mb-3 md:mb-4">the luxury photobooth</p>
               <h2 className="text-4xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6 tracking-tight">
-                Your <span className="italic font-light">Perfect</span> Experience
+                Photobooth <span className="italic font-light">Packages</span>
               </h2>
-              <div className="w-24 h-px mx-auto mb-6 md:mb-8" style={{backgroundColor: '#ceb07e'}}></div>
+              <div className="w-24 h-px mx-auto mb-6 md:mb-8" style={{ backgroundColor: '#ceb07e' }}></div>
               <p className="text-lg md:text-xl text-neutral-600 font-light max-w-2xl mx-auto leading-relaxed">
-                From intimate family portraits to grand celebrations, we craft every moment with artistry designed around your unique vision
+                Studio-quality booth, three ways to book — from digital-only to the full experience.
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-              {[
-                { number: '01', title: 'Photobooth', service: 'Photobooth', delay: 'delay-200', copy: 'Studio-quality portrait booth for events — clean, modern, unforgettable keepsakes.' },
-                { number: '02', title: 'Wedding Photography', service: 'Wedding', delay: 'delay-400', copy: 'Full-day coverage that transforms your wedding into a timeless visual story.' },
-                { number: '03', title: 'Pre-Wedding / Engagement', service: 'Pre-Wedding / Engagement', delay: 'delay-600', copy: 'Pre-shoot sessions that tell the love story leading up to your big day.' },
-                { number: '04', title: 'Quinceañeras', service: 'Quinceañera', delay: 'delay-800', copy: 'Elegant 15 años photography capturing a once-in-a-lifetime celebration.' },
-                { number: '05', title: 'Family Portraits', service: 'Family Portraits', delay: 'delay-1000', copy: 'Sophisticated family sessions that turn everyday love into heirloom art.' },
-              ].map((card) => (
-                <a
-                  key={card.service}
-                  href="#contact"
-                  onClick={(e) => { e.preventDefault(); openContactModal(card.service); }}
-                  className={`group block bg-white p-6 md:p-10 shadow-sm hover:shadow-xl transition-all duration-500 w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] scroll-animate fade-up ${card.delay}`}
-                >
-                  <div
-                    className="font-light text-5xl md:text-6xl italic opacity-50 group-hover:opacity-90 transition-opacity duration-500"
-                    style={{ color: '#ceb07e', fontFamily: 'var(--font-editors-note), serif' }}
-                  >
-                    {card.number}
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-light text-neutral-900 mt-4">
-                    {card.title}
-                  </h3>
-                  <div
-                    className="h-px my-4 w-8 group-hover:w-16 transition-all duration-500"
-                    style={{ backgroundColor: '#ceb07e' }}
-                  ></div>
-                  <p className="text-neutral-600 font-light leading-relaxed mb-6">
-                    {card.copy}
-                  </p>
-                  <div
-                    className="inline-flex items-center text-sm font-light uppercase tracking-[0.2em] transition-transform duration-300 group-hover:translate-x-1"
-                    style={{ color: '#ceb07e' }}
-                  >
-                    Inquire <span className="ml-2">→</span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
+            {/* Package cards */}
+            <div className="grid md:grid-cols-3 gap-6 md:gap-8 items-stretch max-w-6xl mx-auto">
 
-        {/* Professional Headshots — compact B2B callout */}
-        <section id="headshots" className="py-12 md:py-20 px-6 bg-white">
-          <div className="max-w-2xl mx-auto text-center scroll-animate fade-up">
-            <p className="text-xs font-light text-neutral-500 uppercase tracking-[0.2em] mb-2">
-              corporate &amp; personal brand
-            </p>
-            <div
-              className="font-light text-3xl md:text-4xl italic opacity-50"
-              style={{ color: '#ceb07e', fontFamily: 'var(--font-editors-note), serif' }}
-            >
-              06
+              {/* Essential */}
+              <div className="group flex flex-col bg-white border border-neutral-200 p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-500 scroll-animate fade-up delay-200">
+                <h3 className="text-2xl md:text-3xl font-light text-neutral-900">Essential</h3>
+                <p className="text-xs md:text-sm font-light text-neutral-500 uppercase tracking-[0.2em] mt-2">iPad · Digital Only</p>
+                <div className="mt-6">
+                  <span className="text-5xl md:text-6xl font-light" style={{ color: '#ceb07e' }}>$400</span>
+                </div>
+                <p className="text-xs font-light text-neutral-500 uppercase tracking-[0.15em] mt-2">2-hour minimum</p>
+                <div className="h-px my-6 w-8 group-hover:w-16 transition-all duration-500" style={{ backgroundColor: '#ceb07e' }}></div>
+                <ul className="space-y-3 text-neutral-600 font-light leading-relaxed mb-6">
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Drop-off &amp; self-operated setup</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Unlimited digital photos</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Instant digital delivery</span></li>
+                </ul>
+                <p className="text-sm font-light text-neutral-500 mb-8">
+                  Add unlimited prints <span className="font-normal text-neutral-700">+$250</span>
+                </p>
+                <a
+                  href="#contact"
+                  onClick={(e) => { e.preventDefault(); openContactModal('Luxury Photobooth — Essential'); }}
+                  className="mt-auto inline-flex items-center justify-center border px-8 py-3 font-medium text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105"
+                  style={{ color: '#ceb07e', borderColor: '#ceb07e' }}
+                  onMouseEnter={(e) => { const t = e.currentTarget as HTMLAnchorElement; t.style.backgroundColor = '#ceb07e'; t.style.color = '#ffffff'; }}
+                  onMouseLeave={(e) => { const t = e.currentTarget as HTMLAnchorElement; t.style.backgroundColor = 'transparent'; t.style.color = '#ceb07e'; }}
+                >
+                  Choose Essential <span className="ml-2">→</span>
+                </a>
+              </div>
+
+              {/* Signature — featured */}
+              <div className="group relative flex flex-col bg-white p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-500 scroll-animate fade-up delay-400" style={{ border: '2px solid #ceb07e' }}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-white px-4 py-1 rounded-full text-[10px] font-medium uppercase tracking-[0.2em] whitespace-nowrap" style={{ backgroundColor: '#ceb07e' }}>
+                  Most Popular
+                </div>
+                <h3 className="text-2xl md:text-3xl font-light text-neutral-900">Signature</h3>
+                <p className="text-xs md:text-sm font-light text-neutral-500 uppercase tracking-[0.2em] mt-2">DSLR + Unlimited Photos</p>
+                <div className="mt-6">
+                  <span className="text-5xl md:text-6xl font-light" style={{ color: '#ceb07e' }}>$600</span>
+                </div>
+                <p className="text-xs font-light text-neutral-500 uppercase tracking-[0.15em] mt-2">2-hour minimum · +$150 / additional hour</p>
+                <div className="h-px my-6 w-8 group-hover:w-16 transition-all duration-500" style={{ backgroundColor: '#ceb07e' }}></div>
+                <ul className="space-y-3 text-neutral-600 font-light leading-relaxed mb-8">
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Studio-Quality Lighting</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Unlimited 4×6 Prints</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Premium Template Design</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Professional Attendant</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>White or Black Backdrop</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Instant Social Sharing (SMS &amp; Email)</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Full Gallery Access</span></li>
+                </ul>
+                <a
+                  href="#contact"
+                  onClick={(e) => { e.preventDefault(); openContactModal('Luxury Photobooth — Signature'); }}
+                  className="mt-auto inline-flex items-center justify-center text-white px-8 py-3 font-medium text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                  style={{ backgroundColor: '#ceb07e' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#b8996b'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#ceb07e'; }}
+                >
+                  Choose Signature <span className="ml-2">→</span>
+                </a>
+              </div>
+
+              {/* Premier — top tier */}
+              <div className="group relative flex flex-col bg-white border border-neutral-300 p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-500 scroll-animate fade-up delay-600">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-4 py-1 rounded-full text-[10px] font-medium uppercase tracking-[0.2em] whitespace-nowrap border" style={{ color: '#ceb07e', borderColor: '#ceb07e' }}>
+                  Complete
+                </div>
+                <h3 className="text-2xl md:text-3xl font-light text-neutral-900">Premier</h3>
+                <p className="text-xs md:text-sm font-light text-neutral-500 uppercase tracking-[0.2em] mt-2">DSLR + Keychain Station</p>
+                <div className="mt-6">
+                  <span className="text-5xl md:text-6xl font-light" style={{ color: '#ceb07e' }}>$1,100</span>
+                </div>
+                <p className="text-xs font-light text-neutral-500 uppercase tracking-[0.15em] mt-2">3-hour minimum · +$150 / additional hour</p>
+                <div className="h-px my-6 w-8 group-hover:w-16 transition-all duration-500" style={{ backgroundColor: '#ceb07e' }}></div>
+                <ul className="space-y-3 text-neutral-600 font-light leading-relaxed mb-8">
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Studio-Quality Lighting</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Unlimited 4×6 Prints</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Premium Template Design</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Professional Attendant</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>White or Black Backdrop</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Instant Social Sharing (SMS &amp; Email)</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span>Full Gallery Access</span></li>
+                  <li className="flex items-start gap-3"><span style={{ color: '#ceb07e' }}>✓</span><span className="text-neutral-900 font-normal">Keychain Station — up to 150 guests</span></li>
+                </ul>
+                <a
+                  href="#contact"
+                  onClick={(e) => { e.preventDefault(); openContactModal('Luxury Photobooth — Premier'); }}
+                  className="mt-auto inline-flex items-center justify-center text-white px-8 py-3 font-medium text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                  style={{ backgroundColor: '#ceb07e' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#b8996b'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#ceb07e'; }}
+                >
+                  Choose Premier <span className="ml-2">→</span>
+                </a>
+              </div>
+
             </div>
-            <h2 className="text-3xl md:text-4xl font-light text-neutral-900 tracking-tight mt-2">
-              Professional <span className="italic">Headshots</span>
-            </h2>
-            <div className="w-8 h-px mx-auto my-5" style={{ backgroundColor: '#ceb07e' }}></div>
-            <p className="text-base md:text-lg text-neutral-600 font-light leading-relaxed max-w-xl mx-auto mb-8">
-              Polished headshots for LinkedIn, company websites, and personal brands — studio or on-location, with quick sessions and fast turnaround.
-            </p>
-            <a
-              href="#contact"
-              onClick={(e) => { e.preventDefault(); openContactModal('Professional Headshots'); }}
-              className="inline-flex items-center text-white px-8 py-3 font-medium text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
-              style={{ backgroundColor: '#ceb07e' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#b8996b'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#ceb07e'; }}
-            >
-              Inquire <span className="ml-2">→</span>
-            </a>
           </div>
         </section>
 
@@ -653,7 +711,7 @@ export default function Home() {
               <div className="order-2 lg:order-2 lg:pl-8 scroll-animate slide-right delay-400">
                 <p className="text-lg text-neutral-700 font-light leading-[1.8]">
                   We are a team of Los Angeles photographers who specialize in life&apos;s biggest celebrations — weddings,
-                  quinceañeras, family portraits, and photobooth experiences. We believe in creating more than
+                  quinceañeras, family portraits, and luxury photobooth experiences. We believe in creating more than
                   just beautiful photos; we strive to encapsulate the true essence of your moments. From candid smiles
                   to grand celebrations, our collective expertise ensures every detail is thoughtfully documented. With
                   a seamless blend of creativity and professionalism, we make your experience enjoyable and your
@@ -763,6 +821,7 @@ export default function Home() {
             {/* CTA — opens the contact modal */}
             <div className="text-center scroll-animate fade-up delay-200">
               <button
+                type="button"
                 onClick={() => openContactModal()}
                 className="group relative inline-flex items-center justify-center text-white px-10 md:px-16 py-5 md:py-7 font-light text-sm md:text-base uppercase tracking-[0.15em] md:tracking-[0.25em] transition-all duration-500 focus:outline-none hover:-translate-y-0.5"
                 style={{
@@ -779,7 +838,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Contact Form Modal — always mounted, visibility toggled (keeps global animation styles alive) */}
+        {/* Contact Form Modal — always mounted; visibility toggled so the global
+            animation <style> block inside the form stays in the DOM */}
         <div
           className={`fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-start md:items-center justify-center p-4 md:p-6 overflow-y-auto transition-opacity duration-300 ${isContactModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
           onClick={closeContactModal}
@@ -795,6 +855,7 @@ export default function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <button
+              type="button"
               onClick={closeContactModal}
               aria-label="Close"
               className="absolute top-4 right-4 z-10 text-neutral-400 hover:text-white transition-colors text-2xl leading-none"
@@ -807,10 +868,11 @@ export default function Home() {
                 Secure <span className="italic" style={{color: '#ceb07e'}}>Your Date</span>
               </h3>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+            {/* Simplified Contact Form */}
+            <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 md:space-y-6">
               {/* Essential Fields Only */}
               <div>
-                <label htmlFor="fullName" className="block text-sm font-light text-neutral-400 mb-2">
+                <label htmlFor="fullName" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
                   Full Name *
                 </label>
                 <input
@@ -818,47 +880,121 @@ export default function Home() {
                   id="fullName"
                   name="fullName"
                   autoComplete="name"
-                  className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
                   placeholder="Enter your full name"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-light text-neutral-400 mb-2">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    autoComplete="tel"
-                    inputMode="tel"
-                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
-                    placeholder="(555) 123-4567"
-                    required
-                  />
-                </div>
+              <div>
+                <label htmlFor="email" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  Email Address <span className="text-neutral-500 normal-case tracking-normal">(optional)</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                  placeholder="your.email@example.com"
+                />
+              </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-light text-neutral-400 mb-2">
-                    Email Address (optional)
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    autoComplete="email"
-                    inputMode="email"
-                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
-                    placeholder="your.email@example.com"
-                  />
+              <div>
+                <label htmlFor="phone" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                  placeholder="(555) 123-4567"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="eventDate" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  Event Date *
+                </label>
+                <input
+                  type="date"
+                  id="eventDate"
+                  name="eventDate"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg [color-scheme:dark]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="city" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  City *
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  autoComplete="address-level2"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                  placeholder="Los Angeles"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  Preferred Contact Method *
+                </label>
+                <div className="grid grid-cols-3 gap-3 md:gap-4 pt-1">
+                  {[
+                    {
+                      value: 'Text',
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      value: 'Call',
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      value: 'Either',
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-9L21 7.5m0 0L16.5 3M21 7.5H7.5" />
+                        </svg>
+                      ),
+                    },
+                  ].map((opt) => (
+                    <label key={opt.value} className="relative block cursor-pointer">
+                      <input
+                        type="radio"
+                        name="contactMethod"
+                        value={opt.value}
+                        required
+                        className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      />
+                      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-neutral-600 bg-white/5 py-4 md:py-5 text-neutral-400 transition-all duration-300 peer-hover:border-neutral-400 peer-hover:text-neutral-200 peer-checked:border-[#ceb07e] peer-checked:bg-[#ceb07e]/10 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#ceb07e]/60">
+                        {opt.icon}
+                        <span className="text-sm font-light tracking-wide">{opt.value}</span>
+                      </div>
+                    </label>
+                  ))}
                 </div>
               </div>
 
               <div>
-                <label htmlFor="serviceType" className="block text-sm font-light text-neutral-400 mb-2">
+                <label htmlFor="serviceType" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
                   Service Interested In *
                 </label>
                 <select
@@ -866,49 +1002,15 @@ export default function Home() {
                   name="serviceType"
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg appearance-none cursor-pointer"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg appearance-none cursor-pointer"
                   required
                 >
-                  <option value="" disabled className="bg-neutral-900 text-neutral-400">Select a service</option>
-                  <option value="Wedding" className="bg-neutral-900 text-white">Wedding</option>
-                  <option value="Pre-Wedding / Engagement" className="bg-neutral-900 text-white">Pre-Wedding / Engagement</option>
-                  <option value="Quinceañera" className="bg-neutral-900 text-white">Quinceañera (15s)</option>
-                  <option value="Family Portraits" className="bg-neutral-900 text-white">Family Portraits</option>
-                  <option value="Photobooth" className="bg-neutral-900 text-white">Photobooth</option>
-                  <option value="Professional Headshots" className="bg-neutral-900 text-white">Professional Headshots</option>
-                  <option value="Other" className="bg-neutral-900 text-white">Other</option>
+                  <option value="" disabled className="bg-neutral-900 text-neutral-400">Select a package</option>
+                  <option value="Luxury Photobooth — Essential" className="bg-neutral-900 text-white">Essential — $400</option>
+                  <option value="Luxury Photobooth — Signature" className="bg-neutral-900 text-white">Signature — $600</option>
+                  <option value="Luxury Photobooth — Premier" className="bg-neutral-900 text-white">Premier — $1,100</option>
+                  <option value="Luxury Photobooth" className="bg-neutral-900 text-white">Not sure yet</option>
                 </select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div>
-                  <label htmlFor="eventDate" className="block text-sm font-light text-neutral-400 mb-2">
-                    Event Date *
-                  </label>
-                  <input
-                    type="date"
-                    id="eventDate"
-                    name="eventDate"
-                    style={{ colorScheme: 'dark' }}
-                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="city" className="block text-sm font-light text-neutral-400 mb-2">
-                    Location (City) *
-                  </label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    autoComplete="address-level2"
-                    className="w-full bg-transparent border-b border-neutral-500 py-3 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
-                    placeholder="Los Angeles"
-                    required
-                  />
-                </div>
               </div>
 
               {/* Trust Signals */}
@@ -920,7 +1022,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="group relative w-full text-white px-4 md:px-16 py-4 md:py-8 font-light text-sm md:text-base uppercase tracking-[0.08em] md:tracking-[0.25em] transition-all duration-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  className="group relative w-full text-white px-8 md:px-16 py-6 md:py-8 font-light text-sm md:text-base uppercase tracking-[0.15em] md:tracking-[0.25em] transition-all duration-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
                   style={{
                     background: `linear-gradient(135deg, #b8996b 0%, #c2a474 50%, #b8996b 100%)`,
                     borderRadius: '0',
@@ -966,10 +1068,10 @@ export default function Home() {
                   ></div>
                   
                   {/* Button content */}
-                  <span className="relative z-10 flex items-center justify-center whitespace-nowrap">
+                  <span className="relative z-10 flex items-center justify-center">
                     {isSubmitting ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-2 md:mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -977,9 +1079,9 @@ export default function Home() {
                       </>
                     ) : (
                       <>
-                        <span className="mr-2 md:mr-3">✨</span>
+                        <span className="mr-3">✨</span>
                         Secure Your Date
-                        <span className="ml-2 md:ml-3">→</span>
+                        <span className="ml-3">→</span>
                       </>
                     )}
                   </span>
@@ -1114,6 +1216,11 @@ export default function Home() {
                   .hero-element:nth-child(4) { animation-delay: 800ms; }
                   .hero-element:nth-child(5) { animation-delay: 1000ms; }
                 `}</style>
+                <div className="text-center mt-4 space-y-2">
+                  <p className="text-neutral-400 text-sm">
+                    ⚡ We&apos;ll reach out within 24 hours to schedule your consultation
+                  </p>
+                </div>
               </div>
 
               {/* Error Message */}
@@ -1126,30 +1233,6 @@ export default function Home() {
                     <h3 className="text-lg font-light text-white mb-2">Oops!</h3>
                     <p className="text-neutral-300 font-light text-sm">
                       There was an error sending your message. Please try again or contact us directly.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {submitStatus === 'idle' && (
-                <div className="text-center pt-8">
-                  <div className="bg-white/5 rounded-lg p-6">
-                    <div className="flex justify-center items-center space-x-8 mb-4">
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">⚡</div>
-                        <div className="text-xs text-neutral-400">Fast Response</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">💎</div>
-                        <div className="text-xs text-neutral-400">Premium Service</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">📞</div>
-                        <div className="text-xs text-neutral-400">Free Consultation</div>
-                      </div>
-                    </div>
-                    <p className="text-neutral-300 font-light text-sm">
-                      Join the clients who&apos;ve already booked their dream photographer with Sol Imagery!
                     </p>
                   </div>
                 </div>
@@ -1168,20 +1251,17 @@ export default function Home() {
               <ul className="space-y-2 text-neutral-600 font-light text-sm">
                 <li><a href="#home" className="hover:text-neutral-900 transition-colors">Home</a></li>
                 <li><a href="#showcase" className="hover:text-neutral-900 transition-colors">Our Work</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Offerings</a></li>
+                <li><a href="#pricing" className="hover:text-neutral-900 transition-colors">Packages</a></li>
                 <li><a href="#about" className="hover:text-neutral-900 transition-colors">About</a></li>
                 <li><a href="#contact" onClick={(e) => { e.preventDefault(); openContactModal(); }} className="hover:text-neutral-900 transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-light text-sm uppercase tracking-[0.2em] text-neutral-900 mb-4">Services</h3>
+              <h3 className="font-light text-sm uppercase tracking-[0.2em] text-neutral-900 mb-4">Packages</h3>
               <ul className="space-y-2 text-neutral-600 font-light text-sm">
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Photobooth</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Wedding Photography</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Pre-Wedding / Engagement</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Quinceañeras</a></li>
-                <li><a href="#offerings" className="hover:text-neutral-900 transition-colors">Family Portraits</a></li>
-                <li><a href="#headshots" className="hover:text-neutral-900 transition-colors">Professional Headshots</a></li>
+                <li><a href="#pricing" className="hover:text-neutral-900 transition-colors">Essential — $400</a></li>
+                <li><a href="#pricing" className="hover:text-neutral-900 transition-colors">Signature — $600</a></li>
+                <li><a href="#pricing" className="hover:text-neutral-900 transition-colors">Premier — $1,100</a></li>
               </ul>
             </div>
             <div>

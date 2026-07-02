@@ -49,6 +49,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Preferred contact method — constrain to the known radio values (attacker-
+    // controllable via a crafted POST and interpolated into the email HTML below).
+    const ALLOWED_CONTACT_METHODS = ['Text', 'Call', 'Either'];
+    const safeContactMethod = ALLOWED_CONTACT_METHODS.includes(body.contactMethod)
+      ? body.contactMethod
+      : 'Not specified';
+
     // Pre-escaped values for safe interpolation into the HTML templates below
     const safe = {
       fullName: escapeHtml(fullName),
@@ -86,6 +93,7 @@ export async function POST(request: NextRequest) {
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Name:</strong> ${safe.fullName}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Email:</strong> ${email ? `<a href="mailto:${safe.email}" style="color: #ceb07e; text-decoration: none;">${safe.email}</a>` : 'Not provided'}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${safe.phone}" style="color: #ceb07e; text-decoration: none;">${safe.phone}</a></p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Preferred Contact:</strong> ${safeContactMethod}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${safe.serviceType}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Event Date:</strong> ${safe.eventDate}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Location:</strong> ${safe.city}</p>
