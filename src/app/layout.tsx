@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Sol Imagery — Luxury Photography in Los Angeles | Weddings, Quinceañeras, Family & Photobooth",
-  description: "Luxury Los Angeles photography studio specializing in weddings, pre-wedding sessions, quinceañeras, family portraits, and luxury photobooth experiences. Book a free consultation today.",
-  keywords: "los angeles photographer, luxury photography la, wedding photography los angeles, quinceañera photographer los angeles, 15 años photography, family photographer la, luxury photobooth, engagement photography, pre-wedding photos, professional headshots los angeles, linkedin headshot photographer, corporate headshots la",
+  description: "Luxury Los Angeles photography studio specializing in weddings, pre-wedding sessions, quinceañeras, family portraits, and photobooth experiences. Book a free consultation today.",
+  keywords: "los angeles photographer, luxury photography la, wedding photography los angeles, quinceañera photographer los angeles, 15 años photography, family photographer la, photobooth, engagement photography, pre-wedding photos, professional headshots los angeles, linkedin headshot photographer, corporate headshots la",
   authors: [{ name: "Sol Imagery" }],
   creator: "Sol Imagery",
   publisher: "Sol Imagery",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Sol Imagery — Luxury Photography in Los Angeles",
-    description: "Luxury Los Angeles photography: weddings, quinceañeras, family portraits, and luxury photobooth. Book a free consultation today.",
+    description: "Luxury Los Angeles photography: weddings, quinceañeras, family portraits, and photobooth. Book a free consultation today.",
     url: 'https://solimagery.com',
     siteName: 'Sol Imagery',
     images: [
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "Sol Imagery — Luxury Photography in Los Angeles",
-    description: "Weddings, quinceañeras, family portraits & luxury photobooth. Book a free consultation.",
+    description: "Weddings, quinceañeras, family portraits & photobooth. Book a free consultation.",
     images: ['/images/sol-imagery-logo-gold.png'],
     creator: '@solimagery',
   },
