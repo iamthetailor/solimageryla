@@ -20,7 +20,24 @@ export default function ThankYou() {
     // conversions. Fire it at most once per browser session.
     if (sessionStorage.getItem('sol_lead_fired')) return;
     sessionStorage.setItem('sol_lead_fired', '1');
-    window.fbq?.('track', 'Lead');
+
+    // Attach the chosen package to the Lead so Ads Manager can attribute
+    // conversions (and value) per photobooth tier. The `service` comes from the
+    // contact form's redirect (?service=…). Read window.location directly so we
+    // stay client-only and avoid a useSearchParams Suspense boundary.
+    const PACKAGES: Record<string, { content_name: string; value: number }> = {
+      'Luxury Photobooth — Essential': { content_name: 'Essential', value: 400 },
+      'Luxury Photobooth — Signature': { content_name: 'Signature', value: 600 },
+      'Luxury Photobooth — Premier': { content_name: 'Premier', value: 1100 },
+    };
+    const service = new URLSearchParams(window.location.search).get('service') || '';
+    const pkg = PACKAGES[service];
+    const leadParams = pkg
+      ? { content_name: pkg.content_name, content_category: 'Luxury Photobooth', value: pkg.value, currency: 'USD' }
+      : service
+        ? { content_name: service }
+        : undefined;
+    window.fbq?.('track', 'Lead', leadParams);
   }, []);
 
   return (
