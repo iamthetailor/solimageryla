@@ -919,6 +919,34 @@ export default function Home() {
               </div>
 
               <div>
+                <label htmlFor="eventDate" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  Event Date *
+                </label>
+                <input
+                  type="date"
+                  id="eventDate"
+                  name="eventDate"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg [color-scheme:dark]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="city" className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
+                  City *
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  autoComplete="address-level2"
+                  className="w-full bg-transparent border-b border-neutral-500 py-4 px-0 text-white placeholder-neutral-400 focus:border-white focus:outline-none transition-colors duration-300 font-light text-lg"
+                  placeholder="Los Angeles"
+                  required
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs md:text-sm font-light uppercase tracking-[0.2em] text-neutral-300 mb-2 md:mb-3">
                   Preferred Contact Method *
                 </label>
