@@ -21,12 +21,22 @@ export async function POST(request: NextRequest) {
     const fullName = clean(body.fullName, 100);
     const phone = clean(body.phone, 30);
     const serviceType = clean(body.serviceType, 60);
+    const eventDate = clean(body.eventDate, 20);
+    const city = clean(body.city, 100);
     const email = clean(body.email, 254);
 
     // Validate required fields
-    if (!fullName || !phone || !serviceType || !email) {
+    if (!fullName || !phone || !serviceType || !email || !eventDate || !city) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Event date must be an ISO calendar date (YYYY-MM-DD), as produced by the date picker
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
+      return NextResponse.json(
+        { error: 'Invalid event date' },
         { status: 400 }
       );
     }
@@ -52,6 +62,8 @@ export async function POST(request: NextRequest) {
       email: escapeHtml(email),
       phone: escapeHtml(phone),
       serviceType: escapeHtml(serviceType),
+      eventDate: escapeHtml(eventDate),
+      city: escapeHtml(city),
     };
 
     // Create transporter using Gmail SMTP
@@ -83,6 +95,8 @@ export async function POST(request: NextRequest) {
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Phone:</strong> <a href="tel:${safe.phone}" style="color: #ceb07e; text-decoration: none;">${safe.phone}</a></p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Preferred Contact:</strong> ${safeContactMethod}</p>
               <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Service:</strong> ${safe.serviceType}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Event Date:</strong> ${safe.eventDate}</p>
+              <p style="margin: 8px 0; color: #555; font-size: 16px;"><strong>Location:</strong> ${safe.city}</p>
             </div>
             
             <div style="background-color: #ceb07e; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 30px;">
